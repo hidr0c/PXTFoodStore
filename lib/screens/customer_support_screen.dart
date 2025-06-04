@@ -67,7 +67,9 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
     QuerySnapshot snapshot =
         await _firestore.collection('customer_support').get();
     for (var doc in snapshot.docs) {
-      await doc.reference.delete();
+      while (doc.exists) {
+        await doc.reference.delete();
+      }
     }
     _messageController.clear();
   }

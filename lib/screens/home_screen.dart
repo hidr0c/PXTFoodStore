@@ -2,8 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie/screens/feedback_view_screen.dart';
 import 'package:foodie/utils/currency_formatter.dart';
-
-import '../constant/app_color.dart';
+import '../constant/theme_constants.dart';
+import '../widgets/category_selector.dart';
+import '../widgets/food_card.dart';
 import 'bottom_appbar_menu.dart';
 import 'customer_support_screen.dart';
 import 'floating_button.dart';
@@ -21,42 +22,54 @@ class _HomeScreenState extends State<HomeScreen> {
   String _searchKeyword = "";
   final List<String> favoriteItems = [];
 
+  final List<Map<String, String>> categories = [
+    {"name": "Chicken", "image": "assets/images/1.jpg"},
+    {"name": "Burger", "image": "assets/images/2.jpg"},
+    {"name": "Drinks", "image": "assets/images/3.jpg"},
+    {"name": "Other", "image": "assets/images/4.jpg"},
+    {"name": "Pizza", "image": "assets/images/5.jpg"},
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ThemeConstants.backgroundColor,
       extendBody: true,
-      body: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              color: AppColor.primaryColor,
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height * 0.05,
-                bottom: 20,
-                left: 8,
-                right: 8,
-              ),
-              child: Column(
-                children: [
-                  _homeHeader(),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                  _searchSection(),
-                ],
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: ThemeConstants.primaryGradient,
+                ),
+                padding: EdgeInsets.only(
+                  top: ThemeConstants.spacingLG,
+                  bottom: ThemeConstants.spacingLG,
+                ),
+                child: Column(
+                  children: [
+                    _buildHeader(),
+                    SizedBox(height: ThemeConstants.spacingMD),
+                    _buildSearchBar(),
+                  ],
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                  _categorySlider(),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                  _itemList(),
-                  const SizedBox(height: 80),
-                ],
+            SliverToBoxAdapter(
+              child: CategorySelector(
+                categories: categories,
+                selectedCategory: selectedCategory,
+                onCategorySelected: (category) {
+                  setState(() {
+                    selectedCategory = category;
+                  });
+                },
               ),
+            ),
+            SliverPadding(
+              padding: EdgeInsets.all(ThemeConstants.spacingMD),
+              sliver: _buildFoodList(),
             ),
           ],
         ),
@@ -67,166 +80,91 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _homeHeader() {
-    return SizedBox(
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildHeader() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: ThemeConstants.spacingMD),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '3P Food',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 40,
-                      fontFamily: 'Lobster',
-                      fontWeight: FontWeight.w400,
-                      height: 1.0,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Vị ngon trên từng ngón tay!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w500,
-                      height: 1.2,
-                    ),
-                  ),
-                ],
+              Text(
+                '3P Food',
+                style: ThemeConstants.headingLarge.copyWith(
+                  color: Colors.white,
+                  fontFamily: 'Lobster',
+                ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.message_outlined,
-                        color: AppColor.primaryColor),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CustomerSupportScreen(),
-                        ),
-                      );
-                    },
-                  ),
+              SizedBox(height: ThemeConstants.spacingXS),
+              Text(
+                'Vị ngon trên từng ngón tay!',
+                style: ThemeConstants.bodyLarge.copyWith(
+                  color: Colors.white,
                 ),
               ),
             ],
+          ),
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: ThemeConstants.shadowSm,
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.message_outlined,
+                color: ThemeConstants.primaryColor,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CustomerSupportScreen(),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _searchSection() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      child: TextFormField(
-        decoration: InputDecoration(
-          hintText: "Tìm kiếm",
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.0),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-          prefixIcon: const Icon(Icons.search),
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: ThemeConstants.spacingMD),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+          boxShadow: ThemeConstants.shadowSm,
         ),
-        onChanged: (value) {
-          setState(() {
-            _searchKeyword = value.toLowerCase();
-          });
-        },
-      ),
-    );
-  }
-
-  Widget _categorySliderItem(String imagePath, String categoryName) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedCategory = categoryName;
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: Container(
-          width: 50,
-          height: 50,
-          decoration: ShapeDecoration(
-            color: selectedCategory == categoryName
-                ? AppColor.primaryColor
-                : Colors.grey.shade300,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
+        child: TextField(
+          decoration: InputDecoration(
+            hintText: "Tìm kiếm món ăn...",
+            hintStyle: ThemeConstants.bodyMedium,
+            prefixIcon: Icon(
+              Icons.search,
+              color: ThemeConstants.textSecondaryColor,
+            ),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: ThemeConstants.spacingMD,
+              vertical: ThemeConstants.spacingSM,
             ),
           ),
-          child: Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Image.asset(
-                imagePath,
-                width: 35,
-                height: 35,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+          onChanged: (value) {
+            setState(() {
+              _searchKeyword = value.toLowerCase();
+            });
+          },
         ),
       ),
     );
   }
 
-  Widget _categorySlider() {
-    List<Map<String, String>> categories = [
-      {"name": "Chicken", "image": "assets/images/1.jpg"},
-      {"name": "Burger", "image": "assets/images/2.jpg"},
-      {"name": "Drinks", "image": "assets/images/3.jpg"},
-      {"name": "Other", "image": "assets/images/4.jpg"},
-      {"name": "Pizza", "image": "assets/images/5.jpg"},
-    ];
-
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.1,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: Center(
-        child: Wrap(
-          spacing: 10,
-          alignment: WrapAlignment.center,
-          children: categories.map((category) {
-            return _categorySliderItem(category["image"]!, category["name"]!);
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _itemList() {
+  Widget _buildFoodList() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('foods')
@@ -234,155 +172,84 @@ class _HomeScreenState extends State<HomeScreen> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return SliverFillRemaining(
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
+              ),
+            ),
+          );
         }
+
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
-            child: Text("Không có món ăn nào trong danh mục này."),
+          return SliverFillRemaining(
+            child: Center(
+              child: Text(
+                "Không có món ăn nào trong danh mục này.",
+                style: ThemeConstants.bodyLarge,
+              ),
+            ),
           );
         }
 
         List<DocumentSnapshot> foodItems = snapshot.data!.docs;
-
         List<DocumentSnapshot> filteredFoodItems = foodItems.where((food) {
           String name = food['name'].toString().toLowerCase();
           return name.contains(_searchKeyword);
         }).toList();
 
         if (filteredFoodItems.isEmpty) {
-          return const Center(
-            child: Text("Không tìm thấy món ăn nào."),
+          return SliverFillRemaining(
+            child: Center(
+              child: Text(
+                "Không tìm thấy món ăn nào.",
+                style: ThemeConstants.bodyLarge,
+              ),
+            ),
           );
         }
 
-        return Column(
-          children: List.generate(filteredFoodItems.length, (index) {
-            var food = filteredFoodItems[index];
-            bool isFavorite = favoriteItems.contains(food['name']);
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ItemDetailsScreen(
-                      foodId: food.id,
-                    ),
-                  ),
-                );
-              },
-              child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 1,
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        food['imageUrl'] ?? "",
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.image_not_supported,
-                          size: 80,
-                        ),
+        return SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.7,
+            mainAxisSpacing: ThemeConstants.spacingSM,
+            crossAxisSpacing: ThemeConstants.spacingSM,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              var food = filteredFoodItems[index];
+              bool isFavorite = favoriteItems.contains(food['name']);
+              
+              return FoodCard(
+                imageUrl: food['imageUrl'],
+                name: food['name'],
+                price: (food['price'] as num).toDouble(),
+                category: food['category'],
+                isFavorite: isFavorite,
+                onFavoriteToggle: () {
+                  setState(() {
+                    if (isFavorite) {
+                      favoriteItems.remove(food['name']);
+                    } else {
+                      favoriteItems.add(food['name']);
+                    }
+                  });
+                },
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ItemDetailsScreen(
+                        foodId: food.id,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            food['name'],
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            food['description'],
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          CurrencyFormatter.format(food['price']),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                isFavorite
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: isFavorite ? Colors.red : Colors.grey,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  if (isFavorite) {
-                                    favoriteItems.remove(food['name']);
-                                  } else {
-                                    favoriteItems.add(food['name']);
-                                  }
-                                });
-                              },
-                            ),
-                            Container(
-                              width: MediaQuery.of(context).size.width * 0.13,
-                              height: MediaQuery.of(context).size.height * 0.05,
-                              decoration: ShapeDecoration(
-                                color: AppColor.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.visibility,
-                                    color: Colors.white),
-                                onPressed: () {
-                                  String foodId = food.id;
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          FeedbackViewScreen(foodId: foodId),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
+                  );
+                },
+              );
+            },
+            childCount: filteredFoodItems.length,
+          ),
         );
       },
     );

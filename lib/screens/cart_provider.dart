@@ -3,16 +3,18 @@ import 'package:flutter/material.dart';
 class CartItem {
   final String productId;
   final String name;
-  final int quantity;
   final double price;
-  final double spiceLevel;
+  final String? imageUrl;
+  int quantity;
+  double spiceLevel;
 
   CartItem({
     required this.productId,
     required this.name,
-    required this.quantity,
     required this.price,
+    required this.quantity,
     required this.spiceLevel,
+    this.imageUrl,
   });
 }
 
@@ -31,8 +33,14 @@ class CartProvider with ChangeNotifier {
     return total;
   }
 
-  void addItem(String productId, String name, double price, int quantity,
-      double spiceLevel) {
+  void addItem(
+    String productId,
+    String name,
+    double price,
+    int quantity,
+    double spiceLevel,
+    String imageUrl,
+  ) {
     if (_items.containsKey(productId)) {
       _items.update(
         productId,
@@ -42,6 +50,7 @@ class CartProvider with ChangeNotifier {
           quantity: existingItem.quantity + quantity,
           price: existingItem.price,
           spiceLevel: spiceLevel,
+          imageUrl: existingItem.imageUrl ?? imageUrl,
         ),
       );
     } else {
@@ -53,6 +62,7 @@ class CartProvider with ChangeNotifier {
           quantity: quantity,
           price: price,
           spiceLevel: spiceLevel,
+          imageUrl: imageUrl,
         ),
       );
     }
@@ -73,6 +83,7 @@ class CartProvider with ChangeNotifier {
           quantity: existingItem.quantity + 1,
           price: existingItem.price,
           spiceLevel: existingItem.spiceLevel,
+          imageUrl: existingItem.imageUrl,
         ),
       );
       notifyListeners();
@@ -95,6 +106,7 @@ class CartProvider with ChangeNotifier {
           quantity: existingItem.quantity - 1,
           price: existingItem.price,
           spiceLevel: existingItem.spiceLevel,
+          imageUrl: existingItem.imageUrl,
         ),
       );
     } else {

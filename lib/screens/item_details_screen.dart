@@ -2,20 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie/screens/order_details_screen.dart';
 import 'package:provider/provider.dart';
+import '../constant/theme_constants.dart';
+import '../widgets/network_image.dart';
 import 'cart_provider.dart';
-import '../constant/app_color.dart';
 import 'cart_screen.dart';
 
 class ItemDetailsScreen extends StatefulWidget {
   final String foodId;
 
   const ItemDetailsScreen({
-    super.key,
+    Key? key,
     required this.foodId,
-  });
+  }) : super(key: key);
 
   @override
-  _ItemDetailsScreenState createState() => _ItemDetailsScreenState();
+  State<ItemDetailsScreen> createState() => _ItemDetailsScreenState();
 }
 
 class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
@@ -24,6 +25,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   bool _isLoading = true;
   DocumentSnapshot? foodData;
   int availableQuantity = 0;
+  bool isFavorite = false;
 
   @override
   void initState() {
@@ -44,36 +46,34 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
       });
     } catch (e) {
       print('Error fetching food data: $e');
+      setState(() => _isLoading = false);
     }
   }
 
   void _addToCart() {
     if (quantity > availableQuantity || availableQuantity <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Món ăn này đã hết hoặc vượt quá số lượng giới hạn')),
+        SnackBar(
+          content: Text('Món ăn này đã hết hoặc vượt quá số lượng giới hạn'),
+          backgroundColor: ThemeConstants.errorColor,
+        ),
       );
     } else {
-      // Thêm vào giỏ hàng
       Provider.of<CartProvider>(context, listen: false).addItem(
         widget.foodId,
         foodData!['name'],
         (foodData!['price'] as num).toDouble(),
         quantity,
         spiceLevel,
+        foodData!['imageUrl'],
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Đã thêm vào giỏ hàng')),
+        SnackBar(
+          content: Text('Đã thêm vào giỏ hàng'),
+          backgroundColor: ThemeConstants.successColor,
+        ),
       );
     }
-  }
-
-  void _navigateToCartScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CartScreen(),
-      ),
-    );
   }
 
   void _navigateToOrderDetailsScreen() {
@@ -84,6 +84,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
         quantity: quantity,
         price: (foodData!['price'] as num).toDouble(),
         spiceLevel: spiceLevel,
+        imageUrl: foodData!['imageUrl'],
       )
     ];
 
@@ -102,219 +103,349 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (foodData == null || !foodData!.exists) {
-      return Scaffold(
-        body: Center(child: Text('Món ăn không tồn tại')),
-      );
-    }
-
-    var food = foodData!.data() as Map<String, dynamic>;
-    // double price = (food['price'] as num).toDouble();
-    bool isNonSpicy =
-        food['category'] == 'Drinks' || food['category'] == 'Other';
-
     return Scaffold(
-      appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back),
-        ),
-        actions: [
-          Padding(
-            padding: EdgeInsets.all(5.0),
-            child: Icon(Icons.search),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: MediaQuery.of(context).size.height * 0.365,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(food['imageUrl']),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                  Text(
-                    food['name'],
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.star,
-                        color: AppColor.itemListStarColor,
-                      ),
-                      Text(" 4.8 - 14 mins"),
-                    ],
-                  ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                  Text(
-                    food['description'],
-                    style: TextStyle(
-                      color: AppColor.itemDetailsTextColor,
-                    ),
-                  ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                  Text(
-                    "Số lượng",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _buildQuantityButton(Icons.remove, () {
-                        if (quantity > 1) setState(() => quantity--);
-                      }),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Text(
-                          '$quantity',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w500,
-                          ),
+      backgroundColor: ThemeConstants.backgroundColor,
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('foods')
+            .doc(widget.foodId)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
+              ),
+            );
+          }
+
+          final food = snapshot.data!.data() as Map<String, dynamic>;
+          bool isNonSpicy = food['category'] == 'Drinks' || food['category'] == 'Other';
+
+          return Stack(
+            children: [
+              CustomScrollView(
+                slivers: [
+                  _buildSliverAppBar(food),
+                  SliverToBoxAdapter(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: ThemeConstants.surfaceColor,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(ThemeConstants.borderRadiusXL),
+                          topRight: Radius.circular(ThemeConstants.borderRadiusXL),
                         ),
+                        boxShadow: ThemeConstants.shadowLg,
                       ),
-                      _buildQuantityButton(Icons.add, () {
-                        if (quantity < availableQuantity) {
-                          setState(() => quantity++);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content:
-                                Text('Không đủ số lượng món ăn có sẵn')),
-                          );
-                        }
-                      }),
-                    ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(ThemeConstants.spacingLG),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        food['name'],
+                                        style: ThemeConstants.headingLarge,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: ThemeConstants.spacingSM,
+                                        vertical: ThemeConstants.spacingXS,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: ThemeConstants.primaryColor.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.star,
+                                            color: ThemeConstants.primaryColor,
+                                            size: 16,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            '4.8',
+                                            style: ThemeConstants.bodyLarge.copyWith(
+                                              color: ThemeConstants.primaryColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: ThemeConstants.spacingSM),
+                                Text(
+                                  '${(food['price'] as num).toStringAsFixed(0)} VNĐ',
+                                  style: ThemeConstants.headingMedium.copyWith(
+                                    color: ThemeConstants.primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: ThemeConstants.spacingMD),
+                                Text(
+                                  'Mô tả',
+                                  style: ThemeConstants.headingSmall,
+                                ),
+                                SizedBox(height: ThemeConstants.spacingSM),
+                                Text(
+                                  food['description'] ?? 'Không có mô tả',
+                                  style: ThemeConstants.bodyLarge.copyWith(
+                                    color: ThemeConstants.textSecondaryColor,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                SizedBox(height: ThemeConstants.spacingLG),
+                                Text(
+                                  'Số lượng',
+                                  style: ThemeConstants.headingSmall,
+                                ),
+                                SizedBox(height: ThemeConstants.spacingSM),
+                                Row(
+                                  children: [
+                                    _buildQuantityButton(
+                                      icon: Icons.remove,
+                                      onPressed: () {
+                                        if (quantity > 1) {
+                                          setState(() => quantity--);
+                                        }
+                                      },
+                                    ),
+                                    Container(
+                                      width: 50,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        quantity.toString(),
+                                        style: ThemeConstants.headingSmall,
+                                      ),
+                                    ),
+                                    _buildQuantityButton(
+                                      icon: Icons.add,
+                                      onPressed: () {
+                                        if (quantity < availableQuantity) {
+                                          setState(() => quantity++);
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Không đủ số lượng món ăn có sẵn'),
+                                              backgroundColor: ThemeConstants.errorColor,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: ThemeConstants.spacingLG),
+                          if (!isNonSpicy) ...[
+                            Text(
+                              "Mức độ cay",
+                              style: ThemeConstants.headingSmall,
+                            ),
+                            SizedBox(height: ThemeConstants.spacingSM),
+                            SliderTheme(
+                              data: SliderThemeData(
+                                activeTrackColor: ThemeConstants.primaryColor,
+                                inactiveTrackColor: ThemeConstants.primaryColor.withOpacity(0.2),
+                                thumbColor: ThemeConstants.primaryColor,
+                                overlayColor: ThemeConstants.primaryColor.withOpacity(0.1),
+                                valueIndicatorColor: ThemeConstants.primaryColor,
+                                valueIndicatorTextStyle: TextStyle(color: Colors.white),
+                              ),
+                              child: Slider(
+                                value: spiceLevel,
+                                min: 1,
+                                max: 5,
+                                divisions: 4,
+                                label: "$spiceLevel",
+                                onChanged: (double newValue) {
+                                  setState(() {
+                                    spiceLevel = newValue;
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                          SizedBox(height: ThemeConstants.spacingLG),
+                        ],
+                      ),
+                    ),
                   ),
-                  if (!isNonSpicy) ...[
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                    Text(
-                      "Mức độ cay",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Slider(
-                      value: spiceLevel,
-                      min: 1,
-                      max: 5,
-                      divisions: 4,
-                      label: "$spiceLevel",
-                      onChanged: (double newValue) {
-                        setState(() {
-                          spiceLevel = newValue;
-                        });
-                      },
-                      activeColor: AppColor.primaryColor,
-                      inactiveColor: Colors.grey.shade400,
-                    ),
-                  ],
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.2),
                 ],
               ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.17,
-              width: MediaQuery.of(context).size.width,
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      _addToCart();
-                      _navigateToCartScreen();
-                    },
-                    child: Container(
-                      height: 70,
-                      width: MediaQuery.of(context).size.width * 0.30,
-                      padding: EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: AppColor.primaryColor,
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.shopping_cart,
-                          color: AppColor.priceButtonTextColor,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: _navigateToOrderDetailsScreen,
-                    child: Container(
-                      height: 70,
-                      width: MediaQuery.of(context).size.width * 0.530,
-                      padding: EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: AppColor.orderButtonTextColor,
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "ĐẶT HÀNG NGAY",
-                          style: TextStyle(
-                            color: AppColor.priceButtonTextColor,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+              _buildBottomBar(food),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildQuantityButton(IconData icon, VoidCallback onPressed) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: AppColor.primaryColor,
-          shape: BoxShape.circle,
+  Widget _buildSliverAppBar(Map<String, dynamic> food) {
+    return SliverAppBar(
+      expandedHeight: 300,
+      pinned: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            NetworkImageWithFallback(
+              imageUrl: food['imageUrl'],
+              width: double.infinity,
+              height: double.infinity,
+              borderRadius: BorderRadius.zero,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.3),
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.3),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-        child: Icon(
-          icon,
+      ),
+      leading: Container(
+        margin: EdgeInsets.all(ThemeConstants.spacingSM),
+        decoration: BoxDecoration(
           color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: ThemeConstants.shadowSm,
+        ),
+        child: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: ThemeConstants.textPrimaryColor,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      actions: [
+        Container(
+          margin: EdgeInsets.all(ThemeConstants.spacingSM),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: ThemeConstants.shadowSm,
+          ),
+          child: IconButton(
+            icon: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? ThemeConstants.errorColor : ThemeConstants.textSecondaryColor,
+              size: 20,
+            ),
+            onPressed: () {
+              setState(() => isFavorite = !isFavorite);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuantityButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: ThemeConstants.surfaceColor,
+        borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
+        boxShadow: ThemeConstants.shadowSm,
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          size: 20,
+          color: ThemeConstants.textPrimaryColor,
+        ),
+        onPressed: onPressed,
+      ),
+    );
+  }
+
+  Widget _buildBottomBar(Map<String, dynamic> food) {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: EdgeInsets.all(ThemeConstants.spacingMD),
+        decoration: BoxDecoration(
+          color: ThemeConstants.surfaceColor,
+          boxShadow: ThemeConstants.shadowLg,
+        ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Tổng cộng',
+                      style: ThemeConstants.bodyMedium.copyWith(
+                        color: ThemeConstants.textSecondaryColor,
+                      ),
+                    ),
+                    Text(
+                      '${((food['price'] as num) * quantity).toStringAsFixed(0)} VNĐ',
+                      style: ThemeConstants.headingMedium.copyWith(
+                        color: ThemeConstants.primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: ThemeConstants.spacingMD),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _addToCart,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeConstants.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(
+                      vertical: ThemeConstants.spacingMD,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Thêm vào giỏ',
+                    style: ThemeConstants.bodyLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

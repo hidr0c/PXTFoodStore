@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:foodie/constant/app_color.dart';
-import 'package:foodie/utils/currency_formatter.dart';
+import 'package:foodie/constant/theme_constants.dart';
+import 'package:foodie/widgets/network_image.dart';
+import 'package:intl/intl.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
-  const OrderHistoryScreen({super.key});
+  const OrderHistoryScreen({Key? key}) : super(key: key);
 
   @override
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
@@ -14,18 +15,18 @@ class OrderHistoryScreen extends StatefulWidget {
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   final User? user = FirebaseAuth.instance.currentUser;
 
-  Color _getBackgroundColor(String status) {
+  Color _getStatusColor(String status) {
     switch (status) {
       case 'Pending':
-        return Colors.yellow.shade100;
+        return Color(0xFFFFB74D); // Orange
       case 'Confirmed':
-        return Colors.green.shade100;
+        return Color(0xFF66BB6A); // Green
       case 'Delivered':
-        return Colors.blue.shade100;
+        return Color(0xFF42A5F5); // Blue
       case 'Cancelled':
-        return Colors.red.shade100;
+        return Color(0xFFEF5350); // Red
       default:
-        return Colors.grey.shade200;
+        return Color(0xFF9E9E9E); // Grey
     }
   }
 
@@ -38,9 +39,24 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       case 'Delivered':
         return 'Đã giao';
       case 'Cancelled':
-        return 'Hủy đơn';
+        return 'Đã hủy';
       default:
         return 'Không xác định';
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'Pending':
+        return Icons.pending_outlined;
+      case 'Confirmed':
+        return Icons.check_circle_outline;
+      case 'Delivered':
+        return Icons.delivery_dining;
+      case 'Cancelled':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.help_outline;
     }
   }
 
@@ -55,19 +71,24 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         final productId = item['productId'];
         final quantityToReturn = item['quantity'];
 
-        final foodRef =
-        FirebaseFirestore.instance.collection('foods').doc(productId);
+        final foodRef = FirebaseFirestore.instance.collection('foods').doc(productId);
         await foodRef.update({
           'quantity': FieldValue.increment(quantityToReturn),
         });
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đơn hàng đã được hủy thành công')),
+        SnackBar(
+          content: Text('Đơn hàng đã được hủy thành công'),
+          backgroundColor: ThemeConstants.successColor,
+        ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Có lỗi xảy ra khi hủy đơn hàng')),
+        SnackBar(
+          content: Text('Có lỗi xảy ra khi hủy đơn hàng'),
+          backgroundColor: ThemeConstants.errorColor,
+        ),
       );
     }
   }
@@ -75,198 +96,366 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     if (user == null) {
-      return Center(
-        child: Text("Bạn cần đăng nhập để xem lịch sử đơn hàng."),
+      return Scaffold(
+        backgroundColor: ThemeConstants.backgroundColor,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.account_circle_outlined,
+                size: 64,
+                color: ThemeConstants.textSecondaryColor,
+              ),
+              SizedBox(height: ThemeConstants.spacingMD),
+              Text(
+                'Bạn cần đăng nhập',
+                style: ThemeConstants.headingMedium,
+              ),
+              SizedBox(height: ThemeConstants.spacingSM),
+              Text(
+                'Vui lòng đăng nhập để xem lịch sử đơn hàng',
+                style: ThemeConstants.bodyLarge.copyWith(
+                  color: ThemeConstants.textSecondaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Lịch sử đơn hàng'),
-        backgroundColor: AppColor.primaryColor,
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('orders')
-            .where('userId', isEqualTo: user!.uid)
-            .orderBy('timestamp', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
+      backgroundColor: ThemeConstants.backgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: ThemeConstants.primaryGradient,
+              ),
+              padding: EdgeInsets.all(ThemeConstants.spacingLG),
+              child: Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: ThemeConstants.shadowSm,
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: ThemeConstants.textPrimaryColor,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  SizedBox(width: ThemeConstants.spacingMD),
+                  Expanded(
+                    child: Text(
+                      'Lịch sử đơn hàng',
+                      style: ThemeConstants.headingMedium.copyWith(
+                        color: Colors.white,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('orders')
+                    .where('userId', isEqualTo: user!.uid)
+                    .orderBy('timestamp', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
+                      ),
+                    );
+                  }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(
-              child: Text('Bạn chưa có đơn hàng nào.'),
-            );
-          }
-
-          final orders = snapshot.data!.docs;
-
-          return ListView.builder(
-            padding: EdgeInsets.all(10),
-            itemCount: orders.length,
-            itemBuilder: (context, index) {
-              final order = orders[index];
-              final orderData = order.data() as Map<String, dynamic>;
-
-              final items = orderData['items'] as List<dynamic>? ?? [];
-              final timestamp =
-              (orderData['timestamp'] as Timestamp?)?.toDate();
-              final totalPrice = orderData['totalPrice'] as num? ?? 0;
-              final status = orderData['status'] as String? ?? "Không xác định";
-              final note = orderData['note'] as String? ?? "Không có ghi chú";
-              final statusText = _getStatusText(status);
-              final backgroundColor = _getBackgroundColor(status);
-
-              return Card(
-                color: backgroundColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 3,
-                margin: EdgeInsets.only(bottom: 10),
-                child: Padding(
-                  padding: EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Expanded(
-                            child: Text(
-                              'Mã đơn hàng: ${order.id}',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
+                          Icon(
+                            Icons.receipt_long_outlined,
+                            size: 64,
+                            color: ThemeConstants.textSecondaryColor,
                           ),
-                          Column(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.black12,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  statusText,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (status == 'Pending') ...[
-                                SizedBox(height: 8),
-                                ElevatedButton(
-                                  onPressed: () =>
-                                      _cancelOrder(order.id, items),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 6),
-                                  ),
-                                  child: Text(
-                                    'Hủy đơn',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ],
+                          SizedBox(height: ThemeConstants.spacingMD),
+                          Text(
+                            'Chưa có đơn hàng nào',
+                            style: ThemeConstants.headingMedium,
+                          ),
+                          SizedBox(height: ThemeConstants.spacingSM),
+                          Text(
+                            'Hãy đặt món ăn để xem lịch sử đơn hàng',
+                            style: ThemeConstants.bodyLarge.copyWith(
+                              color: ThemeConstants.textSecondaryColor,
+                            ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Ngày đặt hàng: ${timestamp?.day}/${timestamp?.month}/${timestamp?.year}',
-                        style: TextStyle(color: Colors.black87),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        'Tổng tiền: ${CurrencyFormatter.format(totalPrice)}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                    );
+                  }
+
+                  final orders = snapshot.data!.docs;
+
+                  return ListView.builder(
+                    padding: EdgeInsets.all(ThemeConstants.spacingMD),
+                    itemCount: orders.length,
+                    itemBuilder: (context, index) {
+                      final order = orders[index];
+                      final orderData = order.data() as Map<String, dynamic>;
+
+                      final items = orderData['items'] as List<dynamic>? ?? [];
+                      final timestamp = (orderData['timestamp'] as Timestamp?)?.toDate();
+                      final totalPrice = orderData['totalPrice'] as num? ?? 0;
+                      final status = orderData['status'] as String? ?? "Không xác định";
+                      final note = orderData['note'] as String? ?? "Không có ghi chú";
+                      final statusText = _getStatusText(status);
+                      final statusColor = _getStatusColor(status);
+                      final statusIcon = _getStatusIcon(status);
+
+                      return Container(
+                        margin: EdgeInsets.only(bottom: ThemeConstants.spacingMD),
+                        decoration: BoxDecoration(
+                          color: ThemeConstants.surfaceColor,
+                          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                          boxShadow: ThemeConstants.shadowSm,
                         ),
-                      ),
-                      Divider(
-                        color: Colors.black26,
-                        height: 20,
-                        thickness: 1,
-                      ),
-                      Text(
-                        'Ghi chú: $note',
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Chi tiết sản phẩm:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      ...items.map((item) {
-                        final itemData = item as Map<String, dynamic>? ?? {};
-                        final spiceLevel = itemData['spiceLevel'] ?? 0;
-                        return Padding(
-                          padding: EdgeInsets.symmetric(vertical: 3.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      itemData['productName'] ?? 'Không xác định',
-                                      style: TextStyle(color: Colors.black87),
-                                    ),
-                                    if (spiceLevel > 0) ...[
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Cay: $spiceLevel',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontStyle: FontStyle.italic,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(ThemeConstants.spacingMD),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: ThemeConstants.dividerColor,
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Mã đơn: ${order.id}',
+                                          style: ThemeConstants.bodyLarge.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: ThemeConstants.spacingSM,
+                                          vertical: ThemeConstants.spacingXS,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              statusIcon,
+                                              size: 16,
+                                              color: statusColor,
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              statusText,
+                                              style: ThemeConstants.bodyMedium.copyWith(
+                                                color: statusColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
+                                  ),
+                                  SizedBox(height: ThemeConstants.spacingSM),
+                                  Text(
+                                    'Ngày đặt: ${DateFormat('dd/MM/yyyy HH:mm').format(timestamp ?? DateTime.now())}',
+                                    style: ThemeConstants.bodyMedium.copyWith(
+                                      color: ThemeConstants.textSecondaryColor,
+                                    ),
+                                  ),
+                                  if (note.isNotEmpty && note != "Không có ghi chú") ...[
+                                    SizedBox(height: ThemeConstants.spacingSM),
+                                    Text(
+                                      'Ghi chú: $note',
+                                      style: ThemeConstants.bodyMedium.copyWith(
+                                        color: ThemeConstants.textSecondaryColor,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
                                   ],
-                                ),
+                                ],
                               ),
-                              Text(
-                                'SL: ${itemData['quantity'] ?? 0}',
-                                style: TextStyle(color: Colors.black87),
+                            ),
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: items.length,
+                              itemBuilder: (context, index) {
+                                final item = items[index] as Map<String, dynamic>;
+                                final spiceLevel = item['spiceLevel'] ?? 0;
+                                
+                                return Container(
+                                  padding: EdgeInsets.all(ThemeConstants.spacingMD),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: index < items.length - 1 ? ThemeConstants.dividerColor : Colors.transparent,
+                                        width: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item['productName'] ?? 'Không xác định',
+                                              style: ThemeConstants.bodyLarge,
+                                            ),
+                                            SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  '${item['quantity']}x',
+                                                  style: ThemeConstants.bodyMedium.copyWith(
+                                                    color: ThemeConstants.textSecondaryColor,
+                                                  ),
+                                                ),
+                                                if (spiceLevel > 0) ...[
+                                                  SizedBox(width: ThemeConstants.spacingSM),
+                                                  Container(
+                                                    padding: EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: ThemeConstants.errorColor.withOpacity(0.1),
+                                                      borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusSM),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.local_fire_department,
+                                                          size: 12,
+                                                          color: ThemeConstants.errorColor,
+                                                        ),
+                                                        SizedBox(width: 2),
+                                                        Text(
+                                                          '$spiceLevel',
+                                                          style: ThemeConstants.bodySmall.copyWith(
+                                                            color: ThemeConstants.errorColor,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(
+                                        '${(item['price'] * item['quantity']).toStringAsFixed(0)} VNĐ',
+                                        style: ThemeConstants.bodyMedium.copyWith(
+                                          color: ThemeConstants.primaryColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(ThemeConstants.spacingMD),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Tổng cộng',
+                                        style: ThemeConstants.bodyLarge.copyWith(
+                                          color: ThemeConstants.textSecondaryColor,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${totalPrice.toStringAsFixed(0)} VNĐ',
+                                        style: ThemeConstants.headingMedium.copyWith(
+                                          color: ThemeConstants.primaryColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (status == 'Pending') ...[
+                                    SizedBox(height: ThemeConstants.spacingMD),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: () => _cancelOrder(order.id, items),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: ThemeConstants.errorColor,
+                                          foregroundColor: Colors.white,
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: ThemeConstants.spacingMD,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                        child: Text(
+                                          'Hủy đơn hàng',
+                                          style: ThemeConstants.bodyLarge.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                              SizedBox(width: 10),
-                              Text(
-                                CurrencyFormatter.format(itemData['price'] ?? 0),
-                                style: TextStyle(color: Colors.black87),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
