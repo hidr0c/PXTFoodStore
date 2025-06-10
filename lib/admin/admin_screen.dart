@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:foodie/admin/orders_manage.dart';
 import 'package:foodie/screens/login_screen.dart';
+import 'package:foodie/screens/home_screen.dart';
 import 'food_manage.dart';
 import 'account_manage.dart';
 
@@ -21,6 +22,17 @@ class _AdminScreenState extends State<AdminScreen> {
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.orange,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.swap_horiz, color: Colors.white),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen(isAdmin: false)),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -35,6 +47,42 @@ class _AdminScreenState extends State<AdminScreen> {
                 fontWeight: FontWeight.bold,
                 color: Colors.orange,
               ),
+            ),
+            const SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildDashboardCard(
+                  title: 'Tổng đơn hàng',
+                  value: '120',
+                  icon: Icons.receipt_long,
+                  color: Colors.blue,
+                ),
+                _buildDashboardCard(
+                  title: 'Doanh thu',
+                  value: '50M VNĐ',
+                  icon: Icons.attach_money,
+                  color: Colors.green,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildDashboardCard(
+                  title: 'Sản phẩm',
+                  value: '45',
+                  icon: Icons.fastfood,
+                  color: Colors.orange,
+                ),
+                _buildDashboardCard(
+                  title: 'Người dùng',
+                  value: '300',
+                  icon: Icons.person,
+                  color: Colors.purple,
+                ),
+              ],
             ),
             const SizedBox(height: 40),
             _buildAdminOption(
@@ -74,6 +122,54 @@ class _AdminScreenState extends State<AdminScreen> {
             ),
             const Spacer(),
             _buildLogoutButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDashboardCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 32, color: color),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black54,
+              ),
+            ),
           ],
         ),
       ),

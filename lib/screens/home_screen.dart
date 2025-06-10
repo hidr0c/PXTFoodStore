@@ -11,7 +11,9 @@ import 'floating_button.dart';
 import 'item_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool isAdmin;
+
+  const HomeScreen({super.key, this.isAdmin = false});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

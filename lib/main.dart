@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
       title: 'Fast Food App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'Poppins',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),

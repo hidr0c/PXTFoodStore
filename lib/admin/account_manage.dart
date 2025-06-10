@@ -73,48 +73,73 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
   }
 
   Widget _buildUserItem(QueryDocumentSnapshot user) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            user['fullName'] ?? 'Chưa có họ tên',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        _showUserDetails(user);
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
             ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            "Email: ${user['email']}",
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            "Số điện thoại: ${user['phone'] ?? 'Chưa có số điện thoại'}",
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            "Địa chỉ: ${user['address'] ?? 'Chưa có địa chỉ'}",
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              user['fullName'] ?? 'Chưa có họ tên',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              "Email: ${user['email']}",
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  void _showUserDetails(QueryDocumentSnapshot user) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(user['fullName'] ?? 'Chi tiết người dùng'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Email: ${user['email'] ?? 'Không có email'}"),
+              const SizedBox(height: 8),
+              Text("Số điện thoại: ${user['phone'] ?? 'Không có số điện thoại'}"),
+              const SizedBox(height: 8),
+              Text("Địa chỉ: ${user['address'] ?? 'Không có địa chỉ'}"),
+              const SizedBox(height: 8),
+              Text("Trạng thái: ${user['status'] ?? 'Không rõ'}"),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Đóng'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
