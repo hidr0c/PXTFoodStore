@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie/screens/feedback_view_screen.dart';
@@ -83,53 +84,88 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: ThemeConstants.spacingMD),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: ThemeConstants.spacingMD),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '3P Food',
-                style: ThemeConstants.headingLarge.copyWith(
-                  color: Colors.white,
-                  fontFamily: 'Lobster',
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '3P Food',
+                    style: ThemeConstants.headingLarge.copyWith(
+                      color: Colors.white,
+                      fontFamily: 'Lobster',
+                    ),
+                  ),
+                  SizedBox(height: ThemeConstants.spacingXS),
+                  Text(
+                    'Vị ngon trên từng ngón tay!',
+                    style: ThemeConstants.bodyLarge.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: ThemeConstants.spacingXS),
-              Text(
-                'Vị ngon trên từng ngón tay!',
-                style: ThemeConstants.bodyLarge.copyWith(
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
                   color: Colors.white,
+                  boxShadow: ThemeConstants.shadowSm,
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.message_outlined,
+                    color: ThemeConstants.primaryColor,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CustomerSupportScreen(),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
           ),
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-              boxShadow: ThemeConstants.shadowSm,
-            ),
-            child: IconButton(
-              icon: Icon(
-                Icons.message_outlined,
-                color: ThemeConstants.primaryColor,
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CustomerSupportScreen(),
+        ),
+        SizedBox(height: ThemeConstants.spacingMD),
+        CarouselSlider(
+          options: CarouselOptions(
+            height: 200,
+            autoPlay: true,
+            enlargeCenterPage: true,
+            aspectRatio: 16 / 9,
+            viewportFraction: 0.8,
+          ),
+          items: [
+            'assets/images/1.jpg',
+            'assets/images/2.jpg',
+            'assets/images/3.jpg',
+          ].map((imagePath) {
+            return Builder(
+              builder: (BuildContext context) {
+                return Container(
+                  width: MediaQuery.of(context).size.width,
+                  margin: EdgeInsets.symmetric(horizontal: 5.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.0),
+                    image: DecorationImage(
+                      image: AssetImage(imagePath),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 );
               },
-            ),
-          ),
-        ],
-      ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -148,6 +184,10 @@ class _HomeScreenState extends State<HomeScreen> {
             hintStyle: ThemeConstants.bodyMedium,
             prefixIcon: Icon(
               Icons.search,
+              color: ThemeConstants.textSecondaryColor,
+            ),
+            suffixIcon: Icon(
+              Icons.filter_list,
               color: ThemeConstants.textSecondaryColor,
             ),
             border: InputBorder.none,
