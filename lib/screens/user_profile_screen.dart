@@ -39,7 +39,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        final userData = await _firestore.collection('users').doc(user.uid).get();
+        final userData =
+            await _firestore.collection('users').doc(user.uid).get();
 
         if (userData.exists) {
           setState(() {
@@ -51,6 +52,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         }
       }
     } catch (e) {
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không thể tải thông tin người dùng')),
       );
@@ -86,11 +88,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           _isEditing = false;
         });
 
+        if (!mounted) return; // Ensure context is valid before using it
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Cập nhật thông tin thành công')),
         );
       }
     } catch (e) {
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không thể cập nhật thông tin')),
       );
@@ -104,9 +108,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> _signOut() async {
     try {
       await _auth.signOut();
+      if (!mounted) return; // Ensure context is valid before using it
       Navigator.of(context).pushAndRemoveUntil(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const LogIn(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const LogIn(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
@@ -114,6 +120,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         (route) => false,
       );
     } catch (e) {
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không thể đăng xuất')),
       );
@@ -232,7 +239,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),

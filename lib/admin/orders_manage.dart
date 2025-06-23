@@ -61,10 +61,12 @@ class _OrdersManageScreenState extends State<OrdersManageScreen> {
         }
       }
 
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Đơn hàng đã được cập nhật thành $newStatus')),
       );
     } catch (e) {
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Có lỗi xảy ra khi cập nhật đơn hàng')),
       );

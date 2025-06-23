@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:foodie/screens/login_screen.dart';
 import 'package:foodie/constant/app_color.dart';
+import 'package:foodie/utils/text_formatters.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -16,7 +17,8 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -91,6 +93,7 @@ class _SignUpState extends State<SignUp> {
       await Future.delayed(const Duration(seconds: 2));
 
       // Hiển thị thông báo đăng ký thành công
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đăng ký thành công!')),
       );
@@ -141,11 +144,13 @@ class _SignUpState extends State<SignUp> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  _buildTextField(_fullNameController, 'Họ và tên', Icons.person),
+                  _buildTextField(
+                      _fullNameController, 'Họ và tên', Icons.person),
                   const SizedBox(height: 20),
                   _buildTextField(_emailController, 'Email', Icons.email),
                   const SizedBox(height: 20),
-                  _buildTextField(_phoneController, 'Số điện thoại', Icons.phone),
+                  _buildTextField(
+                      _phoneController, 'Số điện thoại', Icons.phone),
                   const SizedBox(height: 20),
                   _buildTextField(_passwordController, 'Mật khẩu', Icons.lock,
                       isObscure: true),
@@ -163,7 +168,7 @@ class _SignUpState extends State<SignUp> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),

@@ -28,7 +28,8 @@ class _AdminScreenState extends State<AdminScreen> {
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const HomeScreen(isAdmin: false)),
+                MaterialPageRoute(
+                    builder: (context) => const HomeScreen(isAdmin: false)),
               );
             },
           ),
@@ -139,11 +140,11 @@ class _AdminScreenState extends State<AdminScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12.0),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -191,7 +192,7 @@ class _AdminScreenState extends State<AdminScreen> {
           border: Border.all(color: Colors.orange[200]!, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.orange[100]!.withOpacity(0.3),
+              color: Colors.orange[100]!.withValues(alpha: 0.3),
               spreadRadius: 1,
               blurRadius: 3,
               offset: const Offset(0, 2),
@@ -220,6 +221,7 @@ class _AdminScreenState extends State<AdminScreen> {
     return GestureDetector(
       onTap: () async {
         await FirebaseAuth.instance.signOut();
+        if (!mounted) return; // Ensure context is valid before using it
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LogIn()),

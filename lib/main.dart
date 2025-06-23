@@ -6,16 +6,22 @@ import 'package:foodie/screens/splash_screen.dart';
 import 'constant/theme_provider.dart';
 import 'screens/cart_provider.dart';
 import 'firebase_options.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialize CartProvider and load saved cart
+  final cartProvider = CartProvider();
+  await cartProvider.loadCart();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
-        ChangeNotifierProvider(create: (context) => CartProvider()),
+        ChangeNotifierProvider.value(value: cartProvider),
       ],
       child: const MyApp(),
     ),

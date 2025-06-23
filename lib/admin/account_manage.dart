@@ -85,7 +85,7 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.3),
+              color: Colors.grey.withValues(alpha: 0.3),
               spreadRadius: 2,
               blurRadius: 5,
               offset: const Offset(0, 3),
@@ -125,7 +125,8 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
             children: [
               Text("Email: ${user['email'] ?? 'Không có email'}"),
               const SizedBox(height: 8),
-              Text("Số điện thoại: ${user['phone'] ?? 'Không có số điện thoại'}"),
+              Text(
+                  "Số điện thoại: ${user['phone'] ?? 'Không có số điện thoại'}"),
               const SizedBox(height: 8),
               Text("Địa chỉ: ${user['address'] ?? 'Không có địa chỉ'}"),
               const SizedBox(height: 8),

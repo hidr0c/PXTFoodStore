@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:foodie/constant/theme_constants.dart';
-import 'package:foodie/widgets/network_image.dart';
 import 'package:intl/intl.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
-  const OrderHistoryScreen({Key? key}) : super(key: key);
+  const OrderHistoryScreen({super.key});
 
   @override
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
@@ -71,12 +70,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         final productId = item['productId'];
         final quantityToReturn = item['quantity'];
 
-        final foodRef = FirebaseFirestore.instance.collection('foods').doc(productId);
+        final foodRef =
+            FirebaseFirestore.instance.collection('foods').doc(productId);
         await foodRef.update({
           'quantity': FieldValue.increment(quantityToReturn),
         });
       }
 
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Đơn hàng đã được hủy thành công'),
@@ -84,10 +85,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ),
       );
     } catch (e) {
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Có lỗi xảy ra khi hủy đơn hàng'),
-          backgroundColor: ThemeConstants.errorColor,
         ),
       );
     }
@@ -176,7 +177,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            ThemeConstants.primaryColor),
                       ),
                     );
                   }
@@ -218,19 +220,24 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       final orderData = order.data() as Map<String, dynamic>;
 
                       final items = orderData['items'] as List<dynamic>? ?? [];
-                      final timestamp = (orderData['timestamp'] as Timestamp?)?.toDate();
+                      final timestamp =
+                          (orderData['timestamp'] as Timestamp?)?.toDate();
                       final totalPrice = orderData['totalPrice'] as num? ?? 0;
-                      final status = orderData['status'] as String? ?? "Không xác định";
-                      final note = orderData['note'] as String? ?? "Không có ghi chú";
+                      final status =
+                          orderData['status'] as String? ?? "Không xác định";
+                      final note =
+                          orderData['note'] as String? ?? "Không có ghi chú";
                       final statusText = _getStatusText(status);
                       final statusColor = _getStatusColor(status);
                       final statusIcon = _getStatusIcon(status);
 
                       return Container(
-                        margin: EdgeInsets.only(bottom: ThemeConstants.spacingMD),
+                        margin:
+                            EdgeInsets.only(bottom: ThemeConstants.spacingMD),
                         decoration: BoxDecoration(
                           color: ThemeConstants.surfaceColor,
-                          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                          borderRadius: BorderRadius.circular(
+                              ThemeConstants.borderRadiusLG),
                           boxShadow: ThemeConstants.shadowSm,
                         ),
                         child: Column(
@@ -250,12 +257,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Text(
                                           'Mã đơn: ${order.id}',
-                                          style: ThemeConstants.bodyLarge.copyWith(
+                                          style:
+                                              ThemeConstants.bodyLarge.copyWith(
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -266,8 +275,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                           vertical: ThemeConstants.spacingXS,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: statusColor.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
+                                          color: statusColor.withValues(
+                                              alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(
+                                              ThemeConstants.borderRadiusMD),
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -280,7 +291,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                             SizedBox(width: 4),
                                             Text(
                                               statusText,
-                                              style: ThemeConstants.bodyMedium.copyWith(
+                                              style: ThemeConstants.bodyMedium
+                                                  .copyWith(
                                                 color: statusColor,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -297,12 +309,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                       color: ThemeConstants.textSecondaryColor,
                                     ),
                                   ),
-                                  if (note.isNotEmpty && note != "Không có ghi chú") ...[
+                                  if (note.isNotEmpty &&
+                                      note != "Không có ghi chú") ...[
                                     SizedBox(height: ThemeConstants.spacingSM),
                                     Text(
                                       'Ghi chú: $note',
                                       style: ThemeConstants.bodyMedium.copyWith(
-                                        color: ThemeConstants.textSecondaryColor,
+                                        color:
+                                            ThemeConstants.textSecondaryColor,
                                         fontStyle: FontStyle.italic,
                                       ),
                                     ),
@@ -315,15 +329,19 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                               physics: NeverScrollableScrollPhysics(),
                               itemCount: items.length,
                               itemBuilder: (context, index) {
-                                final item = items[index] as Map<String, dynamic>;
+                                final item =
+                                    items[index] as Map<String, dynamic>;
                                 final spiceLevel = item['spiceLevel'] ?? 0;
-                                
+
                                 return Container(
-                                  padding: EdgeInsets.all(ThemeConstants.spacingMD),
+                                  padding:
+                                      EdgeInsets.all(ThemeConstants.spacingMD),
                                   decoration: BoxDecoration(
                                     border: Border(
                                       bottom: BorderSide(
-                                        color: index < items.length - 1 ? ThemeConstants.dividerColor : Colors.transparent,
+                                        color: index < items.length - 1
+                                            ? ThemeConstants.dividerColor
+                                            : Colors.transparent,
                                         width: 1,
                                       ),
                                     ),
@@ -332,10 +350,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              item['productName'] ?? 'Không xác định',
+                                              item['productName'] ??
+                                                  'Không xác định',
                                               style: ThemeConstants.bodyLarge,
                                             ),
                                             SizedBox(height: 4),
@@ -343,34 +363,52 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                               children: [
                                                 Text(
                                                   '${item['quantity']}x',
-                                                  style: ThemeConstants.bodyMedium.copyWith(
-                                                    color: ThemeConstants.textSecondaryColor,
+                                                  style: ThemeConstants
+                                                      .bodyMedium
+                                                      .copyWith(
+                                                    color: ThemeConstants
+                                                        .textSecondaryColor,
                                                   ),
                                                 ),
                                                 if (spiceLevel > 0) ...[
-                                                  SizedBox(width: ThemeConstants.spacingSM),
+                                                  SizedBox(
+                                                      width: ThemeConstants
+                                                          .spacingSM),
                                                   Container(
-                                                    padding: EdgeInsets.symmetric(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
                                                       horizontal: 6,
                                                       vertical: 2,
                                                     ),
                                                     decoration: BoxDecoration(
-                                                      color: ThemeConstants.errorColor.withOpacity(0.1),
-                                                      borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusSM),
+                                                      color: ThemeConstants
+                                                          .errorColor
+                                                          .withValues(
+                                                              alpha: 0.1),
+                                                      borderRadius: BorderRadius
+                                                          .circular(ThemeConstants
+                                                              .borderRadiusSM),
                                                     ),
                                                     child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       children: [
                                                         Icon(
-                                                          Icons.local_fire_department,
+                                                          Icons
+                                                              .local_fire_department,
                                                           size: 12,
-                                                          color: ThemeConstants.errorColor,
+                                                          color: ThemeConstants
+                                                              .errorColor,
                                                         ),
                                                         SizedBox(width: 2),
                                                         Text(
                                                           '$spiceLevel',
-                                                          style: ThemeConstants.bodySmall.copyWith(
-                                                            color: ThemeConstants.errorColor,
+                                                          style: ThemeConstants
+                                                              .bodySmall
+                                                              .copyWith(
+                                                            color:
+                                                                ThemeConstants
+                                                                    .errorColor,
                                                           ),
                                                         ),
                                                       ],
@@ -384,7 +422,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                       ),
                                       Text(
                                         '${(item['price'] * item['quantity']).toStringAsFixed(0)} VNĐ',
-                                        style: ThemeConstants.bodyMedium.copyWith(
+                                        style:
+                                            ThemeConstants.bodyMedium.copyWith(
                                           color: ThemeConstants.primaryColor,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -399,17 +438,21 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                               child: Column(
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         'Tổng cộng',
-                                        style: ThemeConstants.bodyLarge.copyWith(
-                                          color: ThemeConstants.textSecondaryColor,
+                                        style:
+                                            ThemeConstants.bodyLarge.copyWith(
+                                          color:
+                                              ThemeConstants.textSecondaryColor,
                                         ),
                                       ),
                                       Text(
                                         '${totalPrice.toStringAsFixed(0)} VNĐ',
-                                        style: ThemeConstants.headingMedium.copyWith(
+                                        style: ThemeConstants.headingMedium
+                                            .copyWith(
                                           color: ThemeConstants.primaryColor,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -421,21 +464,25 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                     SizedBox(
                                       width: double.infinity,
                                       child: ElevatedButton(
-                                        onPressed: () => _cancelOrder(order.id, items),
+                                        onPressed: () =>
+                                            _cancelOrder(order.id, items),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: ThemeConstants.errorColor,
+                                          backgroundColor:
+                                              ThemeConstants.errorColor,
                                           foregroundColor: Colors.white,
                                           padding: EdgeInsets.symmetric(
                                             vertical: ThemeConstants.spacingMD,
                                           ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                                            borderRadius: BorderRadius.circular(
+                                                ThemeConstants.borderRadiusLG),
                                           ),
                                           elevation: 0,
                                         ),
                                         child: Text(
                                           'Hủy đơn hàng',
-                                          style: ThemeConstants.bodyLarge.copyWith(
+                                          style:
+                                              ThemeConstants.bodyLarge.copyWith(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
                                           ),

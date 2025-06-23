@@ -77,7 +77,7 @@ class ThemeConstants {
   // Shadows
   static List<BoxShadow> shadowSm = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.05),
+      color: Colors.black.withValues(alpha: 0.05),
       blurRadius: 4,
       offset: const Offset(0, 2),
     ),
@@ -85,7 +85,7 @@ class ThemeConstants {
 
   static List<BoxShadow> shadowMd = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.08),
+      color: Colors.black.withValues(alpha: 0.08),
       blurRadius: 8,
       offset: const Offset(0, 4),
     ),
@@ -103,4 +103,4 @@ class ThemeConstants {
   static const Duration animationFast = Duration(milliseconds: 200);
   static const Duration animationMedium = Duration(milliseconds: 300);
   static const Duration animationSlow = Duration(milliseconds: 400);
-} 
+}

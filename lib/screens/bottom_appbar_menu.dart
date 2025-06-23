@@ -3,9 +3,6 @@ import 'package:foodie/screens/home_screen.dart';
 import 'order_history_screen.dart';
 import 'user_profile_screen.dart';
 import 'feedback_screen.dart';
-import 'package:provider/provider.dart';
-import 'cart_provider.dart';
-import 'cart_screen.dart';
 
 class BottomAppBarMenu extends StatefulWidget {
   const BottomAppBarMenu({super.key});
@@ -23,23 +20,28 @@ class _BottomAppBarMenuState extends State<BottomAppBarMenu> {
     });
     switch (index) {
       case 0:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()));
         break;
       case 1:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderHistoryScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const OrderHistoryScreen()));
         break;
       case 2:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const FeedbackScreen()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const FeedbackScreen()));
         break;
       case 3:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const UserProfileScreen()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const UserProfileScreen()));
         break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -64,19 +66,31 @@ class _BottomAppBarMenuState extends State<BottomAppBarMenu> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             IconButton(
-              icon: Icon(Icons.home_outlined, color: _selectedIndex == 0 ? Theme.of(context).primaryColor : Colors.black),
+              icon: Icon(Icons.home_outlined,
+                  color: _selectedIndex == 0
+                      ? Theme.of(context).primaryColor
+                      : Colors.black),
               onPressed: () => _onItemTapped(0),
             ),
             IconButton(
-              icon: Icon(Icons.receipt_long, color: _selectedIndex == 1 ? Theme.of(context).primaryColor : Colors.black),
+              icon: Icon(Icons.receipt_long,
+                  color: _selectedIndex == 1
+                      ? Theme.of(context).primaryColor
+                      : Colors.black),
               onPressed: () => _onItemTapped(1),
             ),
             IconButton(
-              icon: Icon(Icons.star, color: _selectedIndex == 2 ? Theme.of(context).primaryColor : Colors.black),
+              icon: Icon(Icons.star,
+                  color: _selectedIndex == 2
+                      ? Theme.of(context).primaryColor
+                      : Colors.black),
               onPressed: () => _onItemTapped(2),
             ),
             IconButton(
-              icon: Icon(Icons.person_3_outlined, color: _selectedIndex == 3 ? Theme.of(context).primaryColor : Colors.black),
+              icon: Icon(Icons.person_3_outlined,
+                  color: _selectedIndex == 3
+                      ? Theme.of(context).primaryColor
+                      : Colors.black),
               onPressed: () => _onItemTapped(3),
             ),
           ],

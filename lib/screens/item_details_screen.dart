@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:foodie/screens/order_details_screen.dart';
 import 'package:provider/provider.dart';
 import '../constant/theme_constants.dart';
 import '../widgets/network_image.dart';
@@ -11,9 +10,9 @@ class ItemDetailsScreen extends StatefulWidget {
   final String foodId;
 
   const ItemDetailsScreen({
-    Key? key,
+    super.key,
     required this.foodId,
-  }) : super(key: key);
+  });
 
   @override
   State<ItemDetailsScreen> createState() => _ItemDetailsScreenState();
@@ -22,7 +21,6 @@ class ItemDetailsScreen extends StatefulWidget {
 class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   int quantity = 1;
   double spiceLevel = 1;
-  bool _isLoading = true;
   DocumentSnapshot? foodData;
   int availableQuantity = 0;
   bool isFavorite = false;
@@ -42,11 +40,9 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
       setState(() {
         foodData = foodSnapshot;
         availableQuantity = foodSnapshot['quantity'];
-        _isLoading = false;
       });
     } catch (e) {
-      print('Error fetching food data: $e');
-      setState(() => _isLoading = false);
+      debugPrint('Error fetching food data: $e');
     }
   }
 
@@ -54,12 +50,14 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
     if (quantity > availableQuantity || availableQuantity <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Món ăn này đã hết hoặc vượt quá số lượng giới hạn'),
-          backgroundColor: ThemeConstants.errorColor,
+          content:
+              const Text('Món ăn này đã hết hoặc vượt quá số lượng giới hạn'),
+          backgroundColor: Colors.red,
         ),
       );
     } else {
-      Provider.of<CartProvider>(context, listen: false).addItem(
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      cartProvider.addItem(
         widget.foodId,
         foodData!['name'],
         (foodData!['price'] as num).toDouble(),
@@ -67,36 +65,26 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
         spiceLevel,
         foodData!['imageUrl'],
       );
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Đã thêm vào giỏ hàng'),
-          backgroundColor: ThemeConstants.successColor,
+          content: Text('Đã thêm $quantity ${foodData!['name']} vào giỏ hàng'),
+          backgroundColor: Colors.green,
+          action: SnackBarAction(
+            label: 'Xem giỏ hàng',
+            textColor: Colors.white,
+            onPressed: () => _navigateToCartScreen(),
+          ),
         ),
       );
     }
   }
 
-  void _navigateToOrderDetailsScreen() {
-    final orderItems = [
-      CartItem(
-        productId: widget.foodId,
-        name: foodData!['name'],
-        quantity: quantity,
-        price: (foodData!['price'] as num).toDouble(),
-        spiceLevel: spiceLevel,
-        imageUrl: foodData!['imageUrl'],
-      )
-    ];
-
-    final totalPrice = orderItems[0].price * orderItems[0].quantity;
-
+  void _navigateToCartScreen() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => OrderDetailsScreen(
-          orderItems: orderItems,
-          totalPrice: totalPrice,
-        ),
+        builder: (context) => const CartScreen(),
       ),
     );
   }
@@ -114,13 +102,15 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
           if (!snapshot.hasData) {
             return Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
               ),
             );
           }
 
           final food = snapshot.data!.data() as Map<String, dynamic>;
-          bool isNonSpicy = food['category'] == 'Drinks' || food['category'] == 'Other';
+          bool isNonSpicy =
+              food['category'] == 'Drinks' || food['category'] == 'Other';
 
           return Stack(
             children: [
@@ -132,8 +122,10 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                       decoration: BoxDecoration(
                         color: ThemeConstants.surfaceColor,
                         borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(ThemeConstants.borderRadiusXL),
-                          topRight: Radius.circular(ThemeConstants.borderRadiusXL),
+                          topLeft:
+                              Radius.circular(ThemeConstants.borderRadiusXL),
+                          topRight:
+                              Radius.circular(ThemeConstants.borderRadiusXL),
                         ),
                         boxShadow: ThemeConstants.shadowLg,
                       ),
@@ -146,7 +138,8 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
                                       child: Text(
@@ -160,8 +153,10 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                         vertical: ThemeConstants.spacingXS,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: ThemeConstants.primaryColor.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                                        color: ThemeConstants.primaryColor
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(
+                                            ThemeConstants.borderRadiusLG),
                                       ),
                                       child: Row(
                                         children: [
@@ -173,8 +168,10 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                           SizedBox(width: 4),
                                           Text(
                                             '4.8',
-                                            style: ThemeConstants.bodyLarge.copyWith(
-                                              color: ThemeConstants.primaryColor,
+                                            style: ThemeConstants.bodyLarge
+                                                .copyWith(
+                                              color:
+                                                  ThemeConstants.primaryColor,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -234,10 +231,13 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                         if (quantity < availableQuantity) {
                                           setState(() => quantity++);
                                         } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             SnackBar(
-                                              content: Text('Không đủ số lượng món ăn có sẵn'),
-                                              backgroundColor: ThemeConstants.errorColor,
+                                              content: Text(
+                                                  'Không đủ số lượng món ăn có sẵn'),
+                                              backgroundColor:
+                                                  ThemeConstants.errorColor,
                                             ),
                                           );
                                         }
@@ -258,11 +258,15 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                             SliderTheme(
                               data: SliderThemeData(
                                 activeTrackColor: ThemeConstants.primaryColor,
-                                inactiveTrackColor: ThemeConstants.primaryColor.withOpacity(0.2),
+                                inactiveTrackColor: ThemeConstants.primaryColor
+                                    .withValues(alpha: 0.2),
                                 thumbColor: ThemeConstants.primaryColor,
-                                overlayColor: ThemeConstants.primaryColor.withOpacity(0.1),
-                                valueIndicatorColor: ThemeConstants.primaryColor,
-                                valueIndicatorTextStyle: TextStyle(color: Colors.white),
+                                overlayColor: ThemeConstants.primaryColor
+                                    .withValues(alpha: 0.1),
+                                valueIndicatorColor:
+                                    ThemeConstants.primaryColor,
+                                valueIndicatorTextStyle:
+                                    TextStyle(color: Colors.white),
                               ),
                               child: Slider(
                                 value: spiceLevel,
@@ -315,9 +319,9 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.3),
+                    Colors.black.withValues(alpha: 0.3),
                     Colors.transparent,
-                    Colors.black.withOpacity(0.3),
+                    Colors.black.withValues(alpha: 0.3),
                   ],
                 ),
               ),
@@ -352,7 +356,9 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
           child: IconButton(
             icon: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: isFavorite ? ThemeConstants.errorColor : ThemeConstants.textSecondaryColor,
+              color: isFavorite
+                  ? ThemeConstants.errorColor
+                  : ThemeConstants.textSecondaryColor,
               size: 20,
             ),
             onPressed: () {
@@ -431,7 +437,8 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                       vertical: ThemeConstants.spacingMD,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                      borderRadius:
+                          BorderRadius.circular(ThemeConstants.borderRadiusLG),
                     ),
                     elevation: 0,
                   ),

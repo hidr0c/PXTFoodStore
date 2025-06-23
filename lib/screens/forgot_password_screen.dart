@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:foodie/screens/login_screen.dart';
 import 'package:foodie/constant/app_color.dart';
+import 'package:foodie/utils/text_formatters.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
@@ -19,6 +20,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập email')),
       );
@@ -26,6 +28,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     }
 
     if (!email.endsWith('@gmail.com')) {
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Email phải kết thúc bằng @gmail.com')),
       );
@@ -36,21 +39,24 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       setState(() {
         _isLoading = true;
       });
-
       await _auth.sendPasswordResetEmail(email: email);
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Đã gửi email khôi phục mật khẩu. Vui lòng kiểm tra hộp thư.'),
+          content: Text(
+              'Đã gửi email khôi phục mật khẩu. Vui lòng kiểm tra hộp thư.'),
         ),
       );
 
       // Chuyển về trang đăng nhập sau 2 giây
       await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const LogIn(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const LogIn(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
@@ -63,6 +69,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       } else {
         message = 'Đã xảy ra lỗi. Vui lòng thử lại.';
       }
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
@@ -118,7 +125,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),

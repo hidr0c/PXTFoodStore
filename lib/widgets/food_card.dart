@@ -12,7 +12,7 @@ class FoodCard extends StatelessWidget {
   final VoidCallback? onFavoriteToggle;
 
   const FoodCard({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.name,
     required this.price,
@@ -20,7 +20,7 @@ class FoodCard extends StatelessWidget {
     required this.onTap,
     this.isFavorite = false,
     this.onFavoriteToggle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class FoodCard extends StatelessWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(24),
-      splashColor: ThemeConstants.primaryColor.withOpacity(0.1),
+      splashColor: ThemeConstants.primaryColor.withValues(alpha: 0.1),
       onTap: onTap,
       child: AnimatedContainer(
         duration: Duration(milliseconds: 200),
@@ -44,8 +44,8 @@ class FoodCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              ThemeConstants.surfaceColor.withOpacity(0.95),
-              ThemeConstants.primaryColor.withOpacity(0.08),
+              ThemeConstants.surfaceColor.withValues(alpha: 0.95),
+              ThemeConstants.primaryColor.withValues(alpha: 0.08),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -53,7 +53,7 @@ class FoodCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: ThemeConstants.primaryColor.withOpacity(0.10),
+              color: ThemeConstants.primaryColor.withValues(alpha: 0.10),
               blurRadius: 16,
               offset: Offset(0, 8),
             ),
@@ -92,8 +92,12 @@ class FoodCard extends StatelessWidget {
                           child: Padding(
                             padding: EdgeInsets.all(8),
                             child: Icon(
-                              isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: isFavorite ? ThemeConstants.errorColor : ThemeConstants.textSecondaryColor,
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite
+                                  ? ThemeConstants.errorColor
+                                  : ThemeConstants.textSecondaryColor,
                               size: 20,
                             ),
                           ),
@@ -154,8 +158,10 @@ class FoodCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: ThemeConstants.primaryColor.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusSM),
+                            color: ThemeConstants.primaryColor
+                                .withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(
+                                ThemeConstants.borderRadiusSM),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,

@@ -7,21 +7,19 @@ import 'package:foodie/screens/order_success_screen.dart';
 import 'package:foodie/firestore_helper.dart';
 import 'package:foodie/constant/theme_constants.dart';
 import 'cart_provider.dart';
-import 'package:foodie/utils/currency_formatter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OrderDetailsScreen extends StatefulWidget {
   final List<CartItem> orderItems;
   final double? totalPrice;
 
   const OrderDetailsScreen({
-    Key? key,
+    super.key,
     required this.orderItems,
     this.totalPrice,
-  }) : super(key: key);
+  });
 
   @override
-  _OrderDetailsScreenState createState() => _OrderDetailsScreenState();
+  State<OrderDetailsScreen> createState() => _OrderDetailsScreenState();
 }
 
 class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
@@ -32,8 +30,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   final TextEditingController _cvvController = TextEditingController();
   bool _isLoading = false;
 
-  final String _clientId = "AaAVVFksDIhN2uzEZq7t7x3HDxvApsBGH17NT3WnEVTLxoIpx8ci5JjRoYXhBTkNSF7g2IQvBTE0Dwre";
-  final String _secretKey = "EFcmdZ21pOId8N0KMVg2FG8dP_3edTUeZQz_TgSL5aPsGK-Ez8lKZQ7OqYaZifzT56v5s_2B3P3X4FI7";
+  final String _clientId =
+      "AaAVVFksDIhN2uzEZq7t7x3HDxvApsBGH17NT3WnEVTLxoIpx8ci5JjRoYXhBTkNSF7g2IQvBTE0Dwre";
+  final String _secretKey =
+      "EFcmdZ21pOId8N0KMVg2FG8dP_3edTUeZQz_TgSL5aPsGK-Ez8lKZQ7OqYaZifzT56v5s_2B3P3X4FI7";
   final String _paypalUrl = "https://api.sandbox.paypal.com";
 
   @override
@@ -46,7 +46,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   double get totalPrice {
-    return widget.totalPrice ?? widget.orderItems.fold(0, (sum, item) => sum + item.price * item.quantity);
+    return widget.totalPrice ??
+        widget.orderItems
+            .fold(0, (sum, item) => sum + item.price * item.quantity);
   }
 
   @override
@@ -105,10 +107,12 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       itemBuilder: (context, index) {
                         final cartItem = widget.orderItems[index];
                         return Container(
-                          margin: EdgeInsets.only(bottom: ThemeConstants.spacingSM),
+                          margin:
+                              EdgeInsets.only(bottom: ThemeConstants.spacingSM),
                           decoration: BoxDecoration(
                             color: ThemeConstants.surfaceColor,
-                            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                            borderRadius: BorderRadius.circular(
+                                ThemeConstants.borderRadiusLG),
                             boxShadow: ThemeConstants.shadowSm,
                           ),
                           child: ListTile(
@@ -140,7 +144,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       padding: EdgeInsets.all(ThemeConstants.spacingMD),
                       decoration: BoxDecoration(
                         color: ThemeConstants.surfaceColor,
-                        borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                        borderRadius: BorderRadius.circular(
+                            ThemeConstants.borderRadiusLG),
                         boxShadow: ThemeConstants.shadowSm,
                       ),
                       child: Row(
@@ -167,9 +172,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       controller: _noteController,
                       decoration: InputDecoration(
                         labelText: 'Ghi chú',
-                        hintText: 'Nhập ghi chú cho đơn hàng (tối đa 165 ký tự)',
+                        hintText:
+                            'Nhập ghi chú cho đơn hàng (tối đa 165 ký tự)',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
+                          borderRadius: BorderRadius.circular(
+                              ThemeConstants.borderRadiusMD),
                         ),
                         filled: true,
                         fillColor: ThemeConstants.surfaceColor,
@@ -183,7 +190,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       decoration: InputDecoration(
                         labelText: 'Số thẻ Visa',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
+                          borderRadius: BorderRadius.circular(
+                              ThemeConstants.borderRadiusMD),
                         ),
                         filled: true,
                         fillColor: ThemeConstants.surfaceColor,
@@ -210,7 +218,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                               labelText: 'Ngày hết hạn',
                               hintText: 'MM/YYYY',
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
+                                borderRadius: BorderRadius.circular(
+                                    ThemeConstants.borderRadiusMD),
                               ),
                               filled: true,
                               fillColor: ThemeConstants.surfaceColor,
@@ -219,7 +228,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                               if (value == null || value.isEmpty) {
                                 return 'Vui lòng nhập ngày hết hạn';
                               }
-                              final isValidFormat = RegExp(r'^(0[1-9]|1[0-2])\/[0-9]{4}$').hasMatch(value);
+                              final isValidFormat =
+                                  RegExp(r'^(0[1-9]|1[0-2])\/[0-9]{4}$')
+                                      .hasMatch(value);
                               if (!isValidFormat) {
                                 return 'Định dạng không hợp lệ';
                               }
@@ -237,7 +248,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                             decoration: InputDecoration(
                               labelText: 'CVV',
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
+                                borderRadius: BorderRadius.circular(
+                                    ThemeConstants.borderRadiusMD),
                               ),
                               filled: true,
                               fillColor: ThemeConstants.surfaceColor,
@@ -260,7 +272,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     if (_isLoading)
                       Center(
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              ThemeConstants.primaryColor),
                         ),
                       )
                     else ...[
@@ -275,7 +288,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                               vertical: ThemeConstants.spacingMD,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                              borderRadius: BorderRadius.circular(
+                                  ThemeConstants.borderRadiusLG),
                             ),
                             elevation: 0,
                           ),
@@ -300,7 +314,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                               vertical: ThemeConstants.spacingMD,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                              borderRadius: BorderRadius.circular(
+                                  ThemeConstants.borderRadiusLG),
                               side: BorderSide(
                                 color: ThemeConstants.primaryColor,
                                 width: 2,
@@ -344,7 +359,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     final currentYear = now.year;
 
     // Kiểm tra xem ngày hết hạn có hợp lệ không
-    return (year > currentYear) || (year == currentYear && month >= currentMonth);
+    return (year > currentYear) ||
+        (year == currentYear && month >= currentMonth);
   }
 
   Future<void> _handleCardPayment() async {
@@ -360,6 +376,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       // Gọi API thanh toán qua thẻ Visa ở đây
       await _processOrder(); // Xử lý đơn hàng nếu thanh toán thành công
     } catch (e) {
+      if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Có lỗi xảy ra: $e')),
       );
@@ -371,7 +388,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Future<void> _payWithPayPal() async {
-    final note = _noteController.text.length > 165 ? _noteController.text.substring(0, 165) : _noteController.text;
+    final note = _noteController.text.length > 165
+        ? _noteController.text.substring(0, 165)
+        : _noteController.text;
     final sanitizedNote = note.replaceAll(RegExp(r'[^A-Za-z0-9 ]'), '').trim();
 
     setState(() {
@@ -387,6 +406,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         // Assume payment is successful
         await _processOrder();
       } else {
+        if (!mounted) return; // Ensure context is valid before using it
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Thanh toán qua PayPal thất bại")),
         );
@@ -403,7 +423,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Future<String> _getAccessToken() async {
-    final basicAuth = 'Basic ${base64Encode(utf8.encode('$_clientId:$_secretKey'))}';
+    final basicAuth =
+        'Basic ${base64Encode(utf8.encode('$_clientId:$_secretKey'))}';
 
     final response = await http.post(
       Uri.parse('$_paypalUrl/v1/oauth2/token'),
@@ -422,7 +443,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     }
   }
 
-  Future<Map<String, dynamic>?> _createPayPalPayment(String accessToken, String note) async {
+  Future<Map<String, dynamic>?> _createPayPalPayment(
+      String accessToken, String note) async {
     final response = await http.post(
       Uri.parse('$_paypalUrl/v1/payments/payment'),
       headers: {
@@ -459,10 +481,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     final userId = FirebaseAuth.instance.currentUser!.uid;
     final note = _noteController.text.isNotEmpty ? _noteController.text : null;
 
-    await FirestoreHelper().saveOrderAndReduceStock(userId, widget.orderItems, totalPrice, note);
+    await FirestoreHelper()
+        .saveOrderAndReduceStock(userId, widget.orderItems, totalPrice, note);
 
     // Thực hiện thêm logic để cập nhật giỏ hàng và điều hướng đến OrderSuccessScreen
+    if (!mounted) return; // Ensure context is valid before using it
     context.read<CartProvider>().clearCart();
+    if (!mounted) return; // Ensure context is valid before using it
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -470,5 +495,4 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       ),
     );
   }
-
 }

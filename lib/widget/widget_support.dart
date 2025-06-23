@@ -6,12 +6,12 @@ class AppWidget {
         color: Colors.black, fontSize: 20.0, fontWeight: FontWeight.bold);
   }
 
-  static TextStyle HeadlineTextFeildStyle() {
+  static TextStyle headlineTextFeildStyle() {
     return const TextStyle(
         color: Colors.black, fontSize: 24.0, fontWeight: FontWeight.bold);
   }
 
-  static TextStyle LightTextFeildStyle() {
+  static TextStyle lightTextFeildStyle() {
     return const TextStyle(
         color: Colors.black38, fontSize: 15.0, fontWeight: FontWeight.w500);
   }

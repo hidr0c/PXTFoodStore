@@ -32,15 +32,16 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     final ImagePicker picker = ImagePicker();
     final XFile? pickedFile =
         await picker.pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không thể chọn hình ảnh')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không thể chọn hình ảnh')),
+        );
+      }
     }
   }
 
@@ -68,7 +69,6 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       // Thông tin Cloudinary
       const String cloudName = "dbzvxli5e";
       const String apiKey = "934527959255681";
-      const String apiSecret = "RsfrEqG5tOiivRUvgBK6pll7teA";
       const String uploadPreset = "foodie";
 
       // Tạo URL API
@@ -96,9 +96,11 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             'Failed to upload image. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không thể tải lên hình ảnh: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể tải lên hình ảnh: $e')),
+        );
+      }
       return null;
     }
   }
@@ -107,18 +109,19 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
   Future<void> _addFood() async {
     final name = _nameController.text.trim();
     final description = _descriptionController.text.trim();
-    final price = _priceController.text.trim();
-
-    // Kiểm tra các trường thông tin
+    final price = _priceController.text.trim(); // Kiểm tra các trường thông tin
     if (name.isEmpty ||
         description.isEmpty ||
         price.isEmpty ||
         _imageFile == null ||
         _selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Vui lòng điền tất cả các trường và chọn hình ảnh')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content:
+                  Text('Vui lòng điền tất cả các trường và chọn hình ảnh')),
+        );
+      }
       return;
     }
 
@@ -137,9 +140,11 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
         'maxQuantity': 0,
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Thêm món ăn thành công!')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Thêm món ăn thành công!')),
+        );
+      }
 
       // Reset các trường thông tin sau khi thêm thành công
       _nameController.clear();
@@ -154,7 +159,6 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
 
   // Hàm lấy danh mục từ Firestore
   Future<List<String>> _getCategories() async {
-
     QuerySnapshot snapshot = await _firestore.collection('categories').get();
     return snapshot.docs.map((doc) => doc['name'].toString()).toList();
   }

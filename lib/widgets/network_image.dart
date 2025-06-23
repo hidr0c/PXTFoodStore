@@ -7,20 +7,20 @@ class NetworkImageWithFallback extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final BorderRadius? borderRadius;
-
   const NetworkImageWithFallback({
-    Key? key,
+    super.key,
     required this.imageUrl,
     this.width,
     this.height,
     this.fit = BoxFit.cover,
     this.borderRadius,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: borderRadius ?? BorderRadius.circular(ThemeConstants.borderRadiusMD),
+      borderRadius:
+          borderRadius ?? BorderRadius.circular(ThemeConstants.borderRadiusMD),
       child: Image.network(
         imageUrl,
         width: width,
@@ -38,7 +38,8 @@ class NetworkImageWithFallback extends StatelessWidget {
                     ? loadingProgress.cumulativeBytesLoaded /
                         loadingProgress.expectedTotalBytes!
                     : null,
-                valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
               ),
             ),
           );
@@ -68,4 +69,4 @@ class NetworkImageWithFallback extends StatelessWidget {
       ),
     );
   }
-} 
+}

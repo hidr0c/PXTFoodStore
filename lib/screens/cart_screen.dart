@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:foodie/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:foodie/utils/currency_formatter.dart';
 import 'cart_provider.dart';
 import 'order_details_screen.dart';
 import 'package:foodie/constant/theme_constants.dart';
 import 'package:foodie/widgets/network_image.dart';
-import 'order_success_screen.dart';
 
 class CartScreen extends StatefulWidget {
-  const CartScreen({Key? key}) : super(key: key);
+  const CartScreen({super.key});
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -124,10 +121,12 @@ class _CartScreenState extends State<CartScreen> {
                         return FutureBuilder<int>(
                           future: _fetchMaxQuantity(productId),
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
                               return Center(
                                 child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      ThemeConstants.primaryColor),
                                 ),
                               );
                             }
@@ -135,38 +134,48 @@ class _CartScreenState extends State<CartScreen> {
                             final maxQuantity = snapshot.data ?? 0;
 
                             return Container(
-                              margin: EdgeInsets.only(bottom: ThemeConstants.spacingMD),
+                              margin: EdgeInsets.only(
+                                  bottom: ThemeConstants.spacingMD),
                               decoration: BoxDecoration(
                                 color: ThemeConstants.surfaceColor,
-                                borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                                borderRadius: BorderRadius.circular(
+                                    ThemeConstants.borderRadiusLG),
                                 boxShadow: ThemeConstants.shadowSm,
                               ),
                               child: Row(
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(ThemeConstants.borderRadiusLG),
-                                      bottomLeft: Radius.circular(ThemeConstants.borderRadiusLG),
+                                      topLeft: Radius.circular(
+                                          ThemeConstants.borderRadiusLG),
+                                      bottomLeft: Radius.circular(
+                                          ThemeConstants.borderRadiusLG),
                                     ),
                                     child: NetworkImageWithFallback(
-                                      imageUrl: cartItem.imageUrl ?? 'assets/images/placeholder.jpg',
+                                      imageUrl: cartItem.imageUrl ??
+                                          'assets/images/placeholder.jpg',
                                       width: 100,
                                       height: 100,
                                     ),
                                   ),
                                   Expanded(
                                     child: Padding(
-                                      padding: EdgeInsets.all(ThemeConstants.spacingMD),
+                                      padding: EdgeInsets.all(
+                                          ThemeConstants.spacingMD),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
                                               Expanded(
                                                 child: Text(
                                                   cartItem.name,
-                                                  style: ThemeConstants.bodyLarge.copyWith(
+                                                  style: ThemeConstants
+                                                      .bodyLarge
+                                                      .copyWith(
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -175,7 +184,8 @@ class _CartScreenState extends State<CartScreen> {
                                                 icon: Icon(
                                                   Icons.close,
                                                   size: 20,
-                                                  color: ThemeConstants.textSecondaryColor,
+                                                  color: ThemeConstants
+                                                      .textSecondaryColor,
                                                 ),
                                                 onPressed: () {
                                                   cart.removeItem(productId);
@@ -183,22 +193,27 @@ class _CartScreenState extends State<CartScreen> {
                                               ),
                                             ],
                                           ),
-                                          SizedBox(height: ThemeConstants.spacingXS),
+                                          SizedBox(
+                                              height: ThemeConstants.spacingXS),
                                           Text(
                                             '${cartItem.price.toStringAsFixed(0)} VNĐ',
-                                            style: ThemeConstants.bodyMedium.copyWith(
-                                              color: ThemeConstants.primaryColor,
+                                            style: ThemeConstants.bodyMedium
+                                                .copyWith(
+                                              color:
+                                                  ThemeConstants.primaryColor,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          SizedBox(height: ThemeConstants.spacingSM),
+                                          SizedBox(
+                                              height: ThemeConstants.spacingSM),
                                           Row(
                                             children: [
                                               _buildQuantityButton(
                                                 icon: Icons.remove,
                                                 onPressed: cartItem.quantity > 1
                                                     ? () {
-                                                        cart.decreaseItemQuantity(productId);
+                                                        cart.decreaseItemQuantity(
+                                                            productId);
                                                       }
                                                     : null,
                                               ),
@@ -207,12 +222,14 @@ class _CartScreenState extends State<CartScreen> {
                                                 alignment: Alignment.center,
                                                 child: Text(
                                                   cartItem.quantity.toString(),
-                                                  style: ThemeConstants.bodyLarge,
+                                                  style:
+                                                      ThemeConstants.bodyLarge,
                                                 ),
                                               ),
                                               _buildQuantityButton(
                                                 icon: Icons.add,
-                                                onPressed: cartItem.quantity < maxQuantity
+                                                onPressed: cartItem.quantity <
+                                                        maxQuantity
                                                     ? () {
                                                         cart.increaseItemQuantity(
                                                           productId,
@@ -288,7 +305,8 @@ class _CartScreenState extends State<CartScreen> {
                             vertical: ThemeConstants.spacingMD,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                            borderRadius: BorderRadius.circular(
+                                ThemeConstants.borderRadiusLG),
                           ),
                           elevation: 0,
                         ),

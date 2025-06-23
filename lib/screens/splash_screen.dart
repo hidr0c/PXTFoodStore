@@ -30,6 +30,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return; // Ensure context is valid before using it
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(

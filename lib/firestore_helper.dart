@@ -23,7 +23,7 @@ class FirestoreHelper {
       'note': note,
     };
 
-    final orderRef = await _firestore.collection('orders').add(orderData);
+    await _firestore.collection('orders').add(orderData);
 
     for (var item in orderItems) {
       await _reduceProductQuantity(item.productId, item.quantity);

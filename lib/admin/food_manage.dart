@@ -16,6 +16,7 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
   // Hàm xóa món ăn
   Future<void> _deleteFood(String foodId) async {
     await FirebaseFirestore.instance.collection('foods').doc(foodId).delete();
+    if (!mounted) return; // Ensure context is valid before using it
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Đã xóa món ăn!')),
     );
@@ -66,13 +67,18 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
                     'maxQuantity': currentMaxQuantity + fillAmount,
                     'quantity': fillAmount,
                   });
-
+                  if (!mounted) {
+                    return; // Ensure context is valid before using it
+                  }
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                         content: Text('Đã cập nhật số lượng thành công!')),
                   );
                   Navigator.of(context).pop();
                 } else {
+                  if (!mounted) {
+                    return; // Ensure context is valid before using it
+                  }
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Số lượng không hợp lệ')),
                   );
@@ -186,7 +192,9 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
                 child: Text(
                   category,
                   style: TextStyle(
-                    color: selectedCategory == category ? Colors.black87 : Colors.black54,
+                    color: selectedCategory == category
+                        ? Colors.black87
+                        : Colors.black54,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -213,7 +221,7 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
         border: Border.all(color: Colors.orange[200]!, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange[100]!.withOpacity(0.3),
+            color: Colors.orange[100]!.withValues(alpha: 0.3),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 2),

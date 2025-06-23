@@ -37,7 +37,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
           Map<String, List<DocumentSnapshot>> categorizedFoods = {};
           for (var doc in snapshot.data!.docs) {
-            String category = doc.data().toString().contains('category') ? doc.get('category') : 'Khác';
+            String category = doc.data().toString().contains('category')
+                ? doc.get('category')
+                : 'Khác';
             categorizedFoods[category] = categorizedFoods[category] ?? [];
             categorizedFoods[category]!.add(doc);
           }
@@ -83,14 +85,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Image.network(
-              food.data().toString().contains('imageUrl') ? food['imageUrl'] : '',
+              food.data().toString().contains('imageUrl')
+                  ? food['imageUrl']
+                  : '',
               width: 80,
               height: 80,
               fit: BoxFit.cover,
             ),
           ),
           title: Text(
-            food.data().toString().contains('name')  ? food['name'] : '',
+            food.data().toString().contains('name') ? food['name'] : '',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -163,10 +167,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
+    if (!mounted) return; // Ensure context is valid before using it
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Phản hồi đã được gửi')),
     );
 
-    print('Phản hồi đã được gửi cho món: $foodId với nội dung: $feedback');
+    debugPrint('Phản hồi đã được gửi cho món: $foodId với nội dung: $feedback');
   }
 }

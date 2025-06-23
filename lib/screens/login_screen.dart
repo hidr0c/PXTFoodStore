@@ -5,8 +5,8 @@ import 'package:foodie/screens/forgot_password_screen.dart';
 import 'package:foodie/screens/signup_screen.dart';
 import 'package:foodie/screens/home_screen.dart';
 import 'package:foodie/admin/admin_screen.dart';
-import 'package:flutter/services.dart';
 import 'package:foodie/constant/app_color.dart';
+import 'package:foodie/utils/text_formatters.dart';
 
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
@@ -73,6 +73,7 @@ class _LogInState extends State<LogIn> {
 
           if (role == 1) {
             // Nếu là admin, điều hướng đến AdminScreen
+            if (!mounted) return; // Ensure context is valid before using it
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
@@ -86,6 +87,7 @@ class _LogInState extends State<LogIn> {
             );
           } else {
             // Nếu là người dùng, điều hướng đến HomeScreen
+            if (!mounted) return; // Ensure context is valid before using it
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
@@ -100,8 +102,10 @@ class _LogInState extends State<LogIn> {
           }
         } else {
           // Nếu không lấy được thông tin từ Firestore
+          if (!mounted) return; // Ensure context is valid before using it
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Thông tin đăng nhập sai. Vui lòng thử lại.')),
+            const SnackBar(
+                content: Text('Thông tin đăng nhập sai. Vui lòng thử lại.')),
           );
         }
       } on FirebaseAuthException catch (e) {
@@ -170,7 +174,7 @@ class _LogInState extends State<LogIn> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -314,19 +318,6 @@ class _LogInState extends State<LogIn> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class LowerCaseTextFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    return TextEditingValue(
-      text: newValue.text.toLowerCase(),
-      selection: newValue.selection,
     );
   }
 }

@@ -1,8 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:foodie/screens/feedback_view_screen.dart';
-import 'package:foodie/utils/currency_formatter.dart';
 import '../constant/theme_constants.dart';
 import '../widgets/category_selector.dart';
 import '../widgets/food_card.dart';
@@ -217,7 +215,8 @@ class _HomeScreenState extends State<HomeScreen> {
           return SliverFillRemaining(
             child: Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(ThemeConstants.primaryColor),
               ),
             ),
           );
@@ -262,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
             (context, index) {
               var food = filteredFoodItems[index];
               bool isFavorite = favoriteItems.contains(food['name']);
-              
+
               return FoodCard(
                 imageUrl: food['imageUrl'],
                 name: food['name'],

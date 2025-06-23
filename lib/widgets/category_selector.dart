@@ -7,15 +7,15 @@ class CategorySelector extends StatelessWidget {
   final Function(String) onCategorySelected;
 
   const CategorySelector({
-    Key? key,
+    super.key,
     required this.categories,
     required this.selectedCategory,
     required this.onCategorySelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -24,7 +24,7 @@ class CategorySelector extends StatelessWidget {
         itemBuilder: (context, index) {
           final category = categories[index];
           final isSelected = category['name'] == selectedCategory;
-          
+
           return GestureDetector(
             onTap: () => onCategorySelected(category['name']!),
             child: Container(
@@ -37,16 +37,18 @@ class CategorySelector extends StatelessWidget {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: isSelected 
-                        ? ThemeConstants.primaryColor 
-                        : ThemeConstants.surfaceColor,
-                      borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
-                      boxShadow: isSelected 
-                        ? ThemeConstants.shadowMd 
-                        : ThemeConstants.shadowSm,
+                      color: isSelected
+                          ? ThemeConstants.primaryColor
+                          : ThemeConstants.surfaceColor,
+                      borderRadius:
+                          BorderRadius.circular(ThemeConstants.borderRadiusMD),
+                      boxShadow: isSelected
+                          ? ThemeConstants.shadowMd
+                          : ThemeConstants.shadowSm,
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
+                      borderRadius:
+                          BorderRadius.circular(ThemeConstants.borderRadiusMD),
                       child: Image.asset(
                         category['image']!,
                         width: 40,
@@ -59,10 +61,11 @@ class CategorySelector extends StatelessWidget {
                   Text(
                     category['name']!,
                     style: ThemeConstants.bodyMedium.copyWith(
-                      color: isSelected 
-                        ? ThemeConstants.primaryColor 
-                        : ThemeConstants.textSecondaryColor,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected
+                          ? ThemeConstants.primaryColor
+                          : ThemeConstants.textSecondaryColor,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 ],
@@ -73,4 +76,4 @@ class CategorySelector extends StatelessWidget {
       ),
     );
   }
-} 
+}

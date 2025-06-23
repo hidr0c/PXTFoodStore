@@ -3,7 +3,7 @@ import 'package:foodie/constant/theme_constants.dart';
 import 'home_screen.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
-  const OrderSuccessScreen({Key? key}) : super(key: key);
+  const OrderSuccessScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class OrderSuccessScreen extends StatelessWidget {
                     width: 200,
                     height: 200,
                     decoration: BoxDecoration(
-                      color: ThemeConstants.primaryColor.withOpacity(0.1),
+                      color: ThemeConstants.primaryColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -68,7 +68,8 @@ class OrderSuccessScreen extends StatelessWidget {
                           vertical: ThemeConstants.spacingMD,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusLG),
+                          borderRadius: BorderRadius.circular(
+                              ThemeConstants.borderRadiusLG),
                         ),
                         elevation: 0,
                       ),
