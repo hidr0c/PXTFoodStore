@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ThemeConstants {
+  // Border radius values
+  static const double borderRadiusXS = 4.0;
+  static const double borderRadiusSM = 8.0;
+  static const double borderRadiusMD = 12.0;
+  static const double borderRadiusLG = 16.0;
+  static const double borderRadiusXL = 24.0;
+
   // Colors
   static const primaryColor = Color(0xFFFF9466);
   static const secondaryColor = Color(0xFF729d39);
@@ -12,19 +19,90 @@ class ThemeConstants {
   static const textSecondaryColor = Color(0xFF636E72);
   static const dividerColor = Color(0xFFE0E0E0);
 
+  // Elevation values
+  static const double elevationNone = 0.0;
+  static const double elevationXS = 1.0;
+  static const double elevationSM = 2.0;
+  static const double elevationMD = 4.0;
+  static const double elevationLG = 8.0;
+
+  // Button sizes
+  static const double buttonHeightSM = 36.0;
+  static const double buttonHeightMD = 48.0;
+  static const double buttonHeightLG = 56.0;
+
+  // Input field heights
+  static const double inputHeightSM = 40.0;
+  static const double inputHeightMD = 48.0;
+  static const double inputHeightLG = 56.0;
+
   // Gradients
-  static const primaryGradient = LinearGradient(
-    colors: [Color(0xFFFF9466), Color(0xFFFF7043)],
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [Color(0xFFFF5722), Color(0xFFFFA000)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // Spacing
+  static const LinearGradient secondaryGradient = LinearGradient(
+    colors: [Color(0xFF2196F3), Color(0xFF4CAF50)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient darkGradient = LinearGradient(
+    colors: [Color(0xFF212121), Color(0xFF424242)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  // Spacing values
   static const double spacingXS = 4.0;
   static const double spacingSM = 8.0;
   static const double spacingMD = 16.0;
   static const double spacingLG = 24.0;
   static const double spacingXL = 32.0;
+
+  // Font size values
+  static const double fontSizeXS = 12.0;
+  static const double fontSizeSM = 14.0;
+  static const double fontSizeMD = 16.0;
+  static const double fontSizeLG = 18.0;
+  static const double fontSizeXL = 20.0;
+  static const double fontSizeXXL = 24.0;
+  static const double fontSizeTitle = 32.0;
+
+  // Icon sizes
+  static const double iconSizeSM = 16.0;
+  static const double iconSizeMD = 24.0;
+  static const double iconSizeLG = 32.0;
+  // Shadows
+  static final List<BoxShadow> shadowSm = [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.1),
+      blurRadius: 4,
+      offset: Offset(0, 2),
+    ),
+  ];
+
+  static final List<BoxShadow> shadowMd = [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.2),
+      blurRadius: 8,
+      offset: Offset(0, 4),
+    ),
+  ];
+  static final List<BoxShadow> shadowLg = [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.3),
+      blurRadius: 12,
+      offset: Offset(0, 6),
+    ),
+  ];
+
+  // Shadow aliases for backward compatibility
+  static List<BoxShadow> get shadowSM => shadowSm;
+  static List<BoxShadow> get shadowMD => shadowMd;
+  static List<BoxShadow> get shadowLG => shadowLg;
 
   // Typography
   static const TextStyle headingLarge = TextStyle(
@@ -67,37 +145,6 @@ class ThemeConstants {
     fontWeight: FontWeight.normal,
     color: textPrimaryColor,
   );
-
-  // Borders
-  static const double borderRadiusSM = 8.0;
-  static const double borderRadiusMD = 12.0;
-  static const double borderRadiusLG = 16.0;
-  static const double borderRadiusXL = 24.0;
-
-  // Shadows
-  static List<BoxShadow> shadowSm = [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.05),
-      blurRadius: 4,
-      offset: const Offset(0, 2),
-    ),
-  ];
-
-  static List<BoxShadow> shadowMd = [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
-      blurRadius: 8,
-      offset: const Offset(0, 4),
-    ),
-  ];
-
-  static const List<BoxShadow> shadowLg = [
-    BoxShadow(
-      color: Color(0x1A000000),
-      blurRadius: 10,
-      offset: Offset(0, 4),
-    ),
-  ];
 
   // Animation Durations
   static const Duration animationFast = Duration(milliseconds: 200);

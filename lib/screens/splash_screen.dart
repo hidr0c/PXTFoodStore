@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodie/screens/login_screen.dart';
+import 'package:foodie/constant/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,6 +13,8 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _opacityAnimation;
+  late Animation<double> _scaleAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -29,6 +32,23 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeInOut,
     );
 
+    // Tạo hiệu ứng scale
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    // Tạo hiệu ứng slide
+    _slideAnimation =
+        Tween<Offset>(begin: Offset(0, 0.2), end: Offset.zero).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutBack,
+      ),
+    );
+
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return; // Ensure context is valid before using it
       Navigator.pushReplacement(
@@ -39,6 +59,7 @@ class _SplashScreenState extends State<SplashScreen>
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
+          transitionDuration: const Duration(milliseconds: 700),
         ),
       );
     });
@@ -56,48 +77,92 @@ class _SplashScreenState extends State<SplashScreen>
     double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.orange[50],
+      backgroundColor: AppTheme.scaffoldBgColor,
       body: Stack(
         children: [
-          FadeTransition(
-            opacity: _opacityAnimation,
-            child: Container(
-              width: width,
-              height: height,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.orange[100]!,
-                    Colors.orange[50]!,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    '3P Food',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 50,
-                      fontFamily: 'Lobster',
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    width: width * 0.6,
-                    height: height * 0.4,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage("assets/images/frenchfriesgirl.png"),
-                        fit: BoxFit.contain,
+          Container(
+            width: width,
+            height: height,
+            decoration: BoxDecoration(
+              gradient: AppTheme.primaryGradient,
+            ),
+          ),
+          Center(
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: FadeTransition(
+                  opacity: _opacityAnimation,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 40),
+                              blurRadius: 20,
+                              offset: Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Image.asset(
+                          "assets/images/logo.png",
+                          width: 100,
+                          height: 100,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            Icons.restaurant,
+                            size: 80,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 30),
+                      const Text(
+                        'PXT Food Store',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 40,
+                          fontFamily: 'Lobster',
+                          fontWeight: FontWeight.w400,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black26,
+                              offset: Offset(2, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Món ngon mỗi ngày',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 200),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 50),
+                      Container(
+                        width: width * 0.6,
+                        height: height * 0.3,
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image:
+                                AssetImage("assets/images/frenchfriesgirl.png"),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
