@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:convert';
 
 class CartItem {
   final String productId;
@@ -118,3 +117,18 @@ class CartNotifier extends StateNotifier<CartState> {
 
 final cartProvider =
     StateNotifierProvider<CartNotifier, CartState>((ref) => CartNotifier());
+
+// Provider for total amount
+final cartTotalAmountProvider = Provider<double>((ref) {
+  final cart = ref.watch(cartProvider);
+  double total = 0;
+  cart.items.forEach((key, item) {
+    total += item.price * item.quantity;
+  });
+  return total;
+});
+
+// Provider for item count
+final cartItemCountProvider = Provider<int>((ref) {
+  return ref.watch(cartProvider).items.length;
+});

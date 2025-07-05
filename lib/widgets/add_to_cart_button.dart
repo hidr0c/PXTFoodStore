@@ -66,12 +66,12 @@ class _AddToCartButtonState extends State<AddToCartButton>
 
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
     cartProvider.addItem(
-      widget.productId,
-      widget.productName,
-      widget.price,
-      widget.quantity,
-      widget.spiceLevel,
-      widget.imageUrl,
+      productId: widget.productId,
+      name: widget.productName,
+      price: widget.price,
+      quantity: widget.quantity,
+      spiceLevel: widget.spiceLevel,
+      imageUrl: widget.imageUrl,
     );
 
     // Simulate loading time

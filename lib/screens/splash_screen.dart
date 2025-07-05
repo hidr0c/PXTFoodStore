@@ -84,7 +84,11 @@ class _SplashScreenState extends State<SplashScreen>
             width: width,
             height: height,
             decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: AppTheme.primaryGradient,
+              ),
             ),
           ),
           Center(

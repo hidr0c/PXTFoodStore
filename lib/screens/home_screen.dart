@@ -47,17 +47,19 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint("Error loading categories: $e");
     }
   }
+
   Future<void> _loadFoods() async {
     try {
       setState(() {
         _isLoading = true;
       });
-      
-      Query<Map<String, dynamic>> foodsQuery = FirebaseFirestore.instance.collection('foods');
+
+      Query<Map<String, dynamic>> foodsQuery =
+          FirebaseFirestore.instance.collection('foods');
       if (_selectedCategory != 'Tất cả') {
         foodsQuery = foodsQuery.where('category', isEqualTo: _selectedCategory);
       }
-      
+
       var foodsSnapshot = await foodsQuery.get();
 
       if (mounted) {
@@ -162,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 26),
                           blurRadius: 10,
                           offset: Offset(0, 2),
                         ),
@@ -188,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 51),
                         blurRadius: 10,
                         offset: Offset(0, 2),
                       ),
@@ -201,8 +203,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       showModalBottomSheet(
                         context: context,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(20)),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
                         ),
                         builder: (context) => _buildFilterBottomSheet(),
                       );
@@ -221,7 +223,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 "Món nổi bật",
                 style: AppTheme.subheadingStyle,
               ),
-            ),            CarouselSlider(
+            ),
+            CarouselSlider(
               options: CarouselOptions(
                 height: 180,
                 viewportFraction: 0.85,
@@ -240,7 +243,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ItemDetailsScreen(foodId: doc.id),
+                            builder: (context) =>
+                                ItemDetailsScreen(foodId: doc.id),
                           ),
                         );
                       },
@@ -262,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.transparent,
-                                Colors.black.withOpacity(0.7),
+                                Colors.black.withValues(alpha: 179),
                               ],
                             ),
                           ),
@@ -330,13 +334,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: InkWell(
                       onTap: () => _onCategorySelected(category),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.primaryColor : Colors.white,
+                          color:
+                              isSelected ? AppTheme.primaryColor : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 26),
                               blurRadius: 4,
                               offset: Offset(0, 2),
                             ),
@@ -345,8 +351,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text(
                           category,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : AppTheme.textSecondaryColor,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.white
+                                : AppTheme.textSecondaryColor,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                       ),
@@ -362,8 +372,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(
-                        color: AppTheme.primaryColor))
+                    child:
+                        CircularProgressIndicator(color: AppTheme.primaryColor))
                 : _foods.isEmpty
                     ? Center(
                         child: Text(
@@ -382,12 +392,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemCount: _foods.length,
                         itemBuilder: (context, index) {
                           DocumentSnapshot doc = _foods[index];
-                          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;                          return InkWell(
+                          Map<String, dynamic> data =
+                              doc.data() as Map<String, dynamic>;
+                          return InkWell(
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ItemDetailsScreen(foodId: doc.id),
+                                  builder: (context) =>
+                                      ItemDetailsScreen(foodId: doc.id),
                                 ),
                               );
                             },
@@ -397,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 26),
                                     blurRadius: 4,
                                     offset: Offset(0, 2),
                                   ),
@@ -407,7 +420,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   ClipRRect(
-                                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(12)),
                                     child: Image.network(
                                       data['imageUrl'] ?? '',
                                       height: 120,
@@ -418,7 +432,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           data['name'] ?? '',
@@ -440,7 +455,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         SizedBox(height: 4),
                                         Row(
                                           children: [
-                                            Icon(Icons.star, size: 16, color: Colors.amber),
+                                            Icon(Icons.star,
+                                                size: 16, color: Colors.amber),
                                             SizedBox(width: 4),
                                             Text(
                                               '${(data['rating']?.toDouble() ?? 0.0).toStringAsFixed(1)}',
@@ -488,14 +504,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: Text("Dưới 50.000đ"),
                 onSelected: (bool selected) {},
                 backgroundColor: Colors.grey[200],
-                selectedColor: AppTheme.primaryColor.withOpacity(0.4),
+                selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
               ),
               SizedBox(width: 8),
               FilterChip(
                 label: Text("50.000đ - 100.000đ"),
                 onSelected: (bool selected) {},
                 backgroundColor: Colors.grey[200],
-                selectedColor: AppTheme.primaryColor.withOpacity(0.4),
+                selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
               ),
             ],
           ),
@@ -505,14 +521,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: Text("100.000đ - 200.000đ"),
                 onSelected: (bool selected) {},
                 backgroundColor: Colors.grey[200],
-                selectedColor: AppTheme.primaryColor.withOpacity(0.4),
+                selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
               ),
               SizedBox(width: 8),
               FilterChip(
                 label: Text("Trên 200.000đ"),
                 onSelected: (bool selected) {},
                 backgroundColor: Colors.grey[200],
-                selectedColor: AppTheme.primaryColor.withOpacity(0.4),
+                selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
               ),
             ],
           ),
@@ -539,7 +555,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     onSelected: (bool selected) {},
                     backgroundColor: Colors.grey[200],
-                    selectedColor: AppTheme.primaryColor.withOpacity(0.4),
+                    selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
                   ),
                 ),
             ],

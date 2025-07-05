@@ -6,16 +6,16 @@ class CartItem {
   final String productId;
   final String name;
   final double price;
-  final String? imageUrl;
   int quantity;
-  double spiceLevel;
+  final double spiceLevel;
+  final String? imageUrl;
 
   CartItem({
     required this.productId,
     required this.name,
     required this.price,
-    required this.quantity,
-    required this.spiceLevel,
+    this.quantity = 1,
+    this.spiceLevel = 0,
     this.imageUrl,
   });
 
@@ -45,27 +45,26 @@ class CartItem {
 }
 
 class CartProvider with ChangeNotifier {
-  final Map<String, CartItem> _items = {};
-  bool _isLoading = false;
+  Map<String, CartItem> _items = {};
 
-  Map<String, CartItem> get items => {..._items};
-
-  bool get isLoading => _isLoading;
+  Map<String, CartItem> get items {
+    return {..._items};
+  }
 
   int get itemCount {
     return _items.length;
   }
 
   int get totalQuantity {
-    int total = 0;
+    int quantity = 0;
     _items.forEach((key, cartItem) {
-      total += cartItem.quantity;
+      quantity += cartItem.quantity;
     });
-    return total;
+    return quantity;
   }
 
   double get totalAmount {
-    double total = 0.0;
+    double total = 0;
     _items.forEach((key, cartItem) {
       total += cartItem.price * cartItem.quantity;
     });
@@ -74,9 +73,6 @@ class CartProvider with ChangeNotifier {
 
   // Load cart from SharedPreferences
   Future<void> loadCart() async {
-    _isLoading = true;
-    notifyListeners();
-
     try {
       final prefs = await SharedPreferences.getInstance();
       final cartJson = prefs.getString('cart');
@@ -92,7 +88,6 @@ class CartProvider with ChangeNotifier {
     } catch (e) {
       debugPrint('Error loading cart: $e');
     } finally {
-      _isLoading = false;
       notifyListeners();
     }
   }
@@ -113,34 +108,36 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  void addItem(
-    String productId,
-    String name,
-    double price,
-    int quantity,
-    double spiceLevel, [
+  void addItem({
+    required String productId,
+    required String name,
+    required double price,
+    required int quantity,
+    required double spiceLevel,
     String? imageUrl,
-  ]) {
+  }) {
     if (_items.containsKey(productId)) {
+      // Update quantity if already in cart
       _items.update(
         productId,
-        (existingItem) => CartItem(
-          productId: existingItem.productId,
-          name: existingItem.name,
-          quantity: existingItem.quantity + quantity,
-          price: existingItem.price,
+        (existingCartItem) => CartItem(
+          productId: existingCartItem.productId,
+          name: existingCartItem.name,
+          price: existingCartItem.price,
+          quantity: existingCartItem.quantity + quantity,
           spiceLevel: spiceLevel,
-          imageUrl: existingItem.imageUrl ?? imageUrl,
+          imageUrl: existingCartItem.imageUrl ?? imageUrl,
         ),
       );
     } else {
+      // Add new item
       _items.putIfAbsent(
         productId,
         () => CartItem(
           productId: productId,
           name: name,
-          quantity: quantity,
           price: price,
+          quantity: quantity,
           spiceLevel: spiceLevel,
           imageUrl: imageUrl,
         ),
@@ -150,51 +147,22 @@ class CartProvider with ChangeNotifier {
     saveCart(); // Auto-save after adding
   }
 
-  void updateQuantity(String productId, int newQuantity) {
-    if (!_items.containsKey(productId)) return;
-
-    if (newQuantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-
-    _items.update(
-      productId,
-      (existingItem) => CartItem(
-        productId: existingItem.productId,
-        name: existingItem.name,
-        quantity: newQuantity,
-        price: existingItem.price,
-        spiceLevel: existingItem.spiceLevel,
-        imageUrl: existingItem.imageUrl,
-      ),
-    );
-    notifyListeners();
-    saveCart();
-  }
-
-  void increaseItemQuantity(
-      String productId, int maxQuantity, BuildContext context) {
-    if (!_items.containsKey(productId)) return;
-
-    final currentQuantity = _items[productId]!.quantity;
-    if (currentQuantity < maxQuantity) {
-      updateQuantity(productId, currentQuantity + 1);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã đạt số lượng tối đa của món ăn này!'),
-          backgroundColor: Colors.orange,
+  void updateQuantity(String productId, int quantity) {
+    if (_items.containsKey(productId)) {
+      _items.update(
+        productId,
+        (existingCartItem) => CartItem(
+          productId: existingCartItem.productId,
+          name: existingCartItem.name,
+          price: existingCartItem.price,
+          quantity: quantity,
+          spiceLevel: existingCartItem.spiceLevel,
+          imageUrl: existingCartItem.imageUrl,
         ),
       );
+      notifyListeners();
+      saveCart();
     }
-  }
-
-  void decreaseItemQuantity(String productId) {
-    if (!_items.containsKey(productId)) return;
-
-    final currentQuantity = _items[productId]!.quantity;
-    updateQuantity(productId, currentQuantity - 1);
   }
 
   void removeItem(String productId) {
@@ -204,7 +172,7 @@ class CartProvider with ChangeNotifier {
   }
 
   void clearCart() {
-    _items.clear();
+    _items = {};
     notifyListeners();
     saveCart();
   }
@@ -221,9 +189,8 @@ class CartProvider with ChangeNotifier {
   Map<String, dynamic> getCartSummary() {
     return {
       'items': _items.values.map((item) => item.toJson()).toList(),
-      'totalItems': totalQuantity,
+      'totalItems': itemCount,
       'totalAmount': totalAmount,
-      'itemCount': itemCount,
     };
   }
 }

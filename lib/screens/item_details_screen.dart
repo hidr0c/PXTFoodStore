@@ -58,12 +58,12 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
     } else {
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
       cartProvider.addItem(
-        widget.foodId,
-        foodData!['name'],
-        (foodData!['price'] as num).toDouble(),
-        quantity,
-        spiceLevel,
-        foodData!['imageUrl'],
+        productId: widget.foodId,
+        name: foodData!['name'],
+        price: (foodData!['price'] as num).toDouble(),
+        quantity: quantity,
+        spiceLevel: spiceLevel,
+        imageUrl: foodData!['imageUrl'],
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
