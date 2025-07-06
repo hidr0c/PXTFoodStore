@@ -175,8 +175,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     showDialog(
       context: context,
       builder: (context) => RatingReviewDialog(
-        foodId: foodId,
-        foodName: foodName,
+        productId: foodId,
+        productName: foodName,
         imageUrl: imageUrl,
       ),
     );

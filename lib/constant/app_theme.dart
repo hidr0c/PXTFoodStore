@@ -1,5 +1,17 @@
 import 'package:flutter/material.dart';
 
+// Extension to add withValues method to Color class
+extension ColorExtension on Color {
+  Color withValues({int? red, int? green, int? blue, int? alpha}) {
+    return Color.fromARGB(
+      alpha ?? this.alpha,
+      red ?? this.red,
+      green ?? this.green,
+      blue ?? this.blue,
+    );
+  }
+}
+
 class AppTheme {
   // Primary color for the app
   static final Color primaryColor =
@@ -81,14 +93,13 @@ class AppTheme {
   static TextStyle get captionStyle => const TextStyle(
         fontSize: 14,
         color: textSecondaryColor,
-      );
-  // Button styles
+      ); // Button styles
   static ButtonStyle get primaryButtonStyle => ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(primaryColor),
-        foregroundColor: WidgetStateProperty.all(Colors.white),
+        backgroundColor: MaterialStateProperty.all(primaryColor),
+        foregroundColor: MaterialStateProperty.all(Colors.white),
         padding:
-            WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 15)),
-        shape: WidgetStateProperty.all(
+            MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 15)),
+        shape: MaterialStateProperty.all(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),

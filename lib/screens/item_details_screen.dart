@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../constant/theme_constants.dart';
 import '../widgets/network_image.dart';
+import '../widgets/reviews_section.dart';
+import '../widgets/rating_review_dialog.dart';
 import 'cart_provider.dart';
 import 'cart_screen.dart';
 
@@ -283,6 +286,118 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                             ),
                           ],
                           SizedBox(height: ThemeConstants.spacingLG),
+
+                          // Rating and Review Section
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: ThemeConstants.spacingLG),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.orange.shade100,
+                                        Colors.white
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(15),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withValues(alpha: 10),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  padding: EdgeInsets.all(16),
+                                  margin: EdgeInsets.symmetric(vertical: 8),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.star_rounded,
+                                            color: Colors.orange.shade700,
+                                            size: 28,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            "Đánh giá và nhận xét",
+                                            style: ThemeConstants.headingSmall
+                                                .copyWith(
+                                              color: ThemeConstants
+                                                  .textPrimaryColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      ElevatedButton.icon(
+                                        icon: Icon(
+                                          Icons.rate_review_rounded,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
+                                        label: Text(
+                                          'Viết đánh giá',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              ThemeConstants.primaryColor,
+                                          elevation: 0,
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          // Check if user is admin
+                                          final isAdmin = FirebaseAuth.instance
+                                                  .currentUser?.email ==
+                                              'admin@foodstore.com';
+
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                RatingReviewDialog(
+                                              productId: widget.foodId,
+                                              productName: food['name'],
+                                              isAdmin: isAdmin,
+                                              onReviewAdded: () {
+                                                // Refresh the screen
+                                                setState(() {});
+                                              },
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: ThemeConstants.spacingSM),
+                                ReviewsSection(
+                                  productId: widget.foodId,
+                                  productName: food['name'],
+                                  imageUrl: food['imageUrl'],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: ThemeConstants.spacingXL * 2),
                         ],
                       ),
                     ),

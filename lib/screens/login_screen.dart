@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:foodie/screens/forgot_password_screen.dart';
 import 'package:foodie/screens/signup_screen.dart';
-import 'package:foodie/screens/home_screen.dart';
-import 'package:foodie/admin/admin_screen.dart';
+// Admin screen is now accessed through DashboardScreen
 import 'package:foodie/constant/app_theme.dart';
 import 'package:foodie/utils/text_formatters.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:foodie/screens/dashboard_screen.dart';
 
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
@@ -78,17 +78,21 @@ class _LogInState extends State<LogIn> {
     });
 
     final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    // Check if admin login
+    final password = _passwordController.text.trim(); // Check if admin login
     if (email == adminEmail && password == adminPassword) {
+      // Set up the admin user in FirebaseAuth so DashboardScreen can detect it
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: adminEmail,
+        password: adminPassword,
+      );
+
       setState(() {
         _isLoading = false;
       });
 
       if (!mounted) return;
       Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => const AdminScreen()));
+          MaterialPageRoute(builder: (context) => const DashboardScreen()));
       return;
     }
 
@@ -98,8 +102,9 @@ class _LogInState extends State<LogIn> {
         password: password,
       );
 
+      // Save remember me preferences
       if (_rememberMe) {
-        _handleRememberMe(_rememberMe);
+        _handleRememberMe(true);
       }
 
       setState(() {
@@ -108,9 +113,9 @@ class _LogInState extends State<LogIn> {
 
       if (!mounted) return;
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const HomeScreen(isAdmin: false)));
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      );
     } on FirebaseAuthException catch (e) {
       setState(() {
         _isLoading = false;

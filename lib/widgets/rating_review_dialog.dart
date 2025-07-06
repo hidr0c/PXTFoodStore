@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:foodie/constant/app_theme.dart';
+import 'package:foodie/widgets/rating_bar.dart';
 
 class RatingReviewDialog extends StatefulWidget {
-  final String foodId;
-  final String foodName;
+  final String productId;
+  final String productName;
   final String? imageUrl;
+  final Function? onReviewAdded;
+  final bool isAdmin;
 
   const RatingReviewDialog({
     super.key,
-    required this.foodId,
-    required this.foodName,
+    required this.productId,
+    required this.productName,
     this.imageUrl,
+    this.onReviewAdded,
+    this.isAdmin = false,
   });
 
   @override
@@ -20,11 +25,10 @@ class RatingReviewDialog extends StatefulWidget {
 }
 
 class _RatingReviewDialogState extends State<RatingReviewDialog> {
-  final _reviewController = TextEditingController();
-  final _firestore = FirebaseFirestore.instance;
-  final _auth = FirebaseAuth.instance;
-  int _rating = 0;
+  double _rating = 3.0;
+  final TextEditingController _reviewController = TextEditingController();
   bool _isSubmitting = false;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -33,74 +37,106 @@ class _RatingReviewDialogState extends State<RatingReviewDialog> {
   }
 
   Future<void> _submitReview() async {
-    if (_rating == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn số sao')),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
-
-    final user = _auth.currentUser;
-    if (user == null) return;
 
     setState(() {
       _isSubmitting = true;
     });
 
     try {
-      final reviewData = {
-        'userId': user.uid,
-        'userName': user.displayName ?? 'Người dùng',
-        'productId': widget.foodId,
-        'rating': _rating,
-        'review': _reviewController.text,
-        'createdAt': FieldValue.serverTimestamp(),
-      };
+      final user = FirebaseAuth.instance.currentUser;
 
-      // Add review to reviews collection
-      await _firestore.collection('reviews').add(reviewData);
+      if (user == null && !widget.isAdmin) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bạn cần đăng nhập để đánh giá')),
+        );
+        setState(() {
+          _isSubmitting = false;
+        });
+        return;
+      }
 
-      // Update product average rating
-      final productRef = _firestore.collection('products').doc(widget.foodId);
-      await _firestore.runTransaction((transaction) async {
-        final productSnapshot = await transaction.get(productRef);
+      // Reference to user document
+      DocumentSnapshot? userDoc;
+      String userName = 'Admin';
+      String userAvatar = '';
 
-        if (productSnapshot.exists) {
-          double currentRating = productSnapshot.data()?['avgRating'] ?? 0;
-          int ratingCount = productSnapshot.data()?['ratingCount'] ?? 0;
+      if (!widget.isAdmin && user != null) {
+        userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
-          // Calculate new average rating
-          double newRating =
-              ((currentRating * ratingCount) + _rating) / (ratingCount + 1);
-
-          transaction.update(productRef, {
-            'avgRating': newRating,
-            'ratingCount': ratingCount + 1,
-          });
+        if (userDoc.exists) {
+          final userData = userDoc.data() as Map<String, dynamic>;
+          userName = userData['fullName'] ?? 'Người dùng';
+          userAvatar = userData['avatarUrl'] ?? '';
         }
+      }
+
+      // Add review to Firestore
+      await FirebaseFirestore.instance
+          .collection('foods')
+          .doc(widget.productId)
+          .collection('reviews')
+          .add({
+        'userId': widget.isAdmin ? 'admin' : user?.uid,
+        'userName': userName,
+        'userAvatar': userAvatar,
+        'rating': _rating,
+        'review': _reviewController.text.trim(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'isAdmin': widget.isAdmin,
+      });
+
+      // Update average rating in food document
+      final reviewsSnapshot = await FirebaseFirestore.instance
+          .collection('foods')
+          .doc(widget.productId)
+          .collection('reviews')
+          .get();
+
+      if (reviewsSnapshot.docs.isNotEmpty) {
+        double totalRating = 0;
+        for (var doc in reviewsSnapshot.docs) {
+          totalRating += doc['rating'] as double;
+        }
+
+        final averageRating = totalRating / reviewsSnapshot.docs.length;
+
+        await FirebaseFirestore.instance
+            .collection('foods')
+            .doc(widget.productId)
+            .update({
+          'rating': averageRating,
+          'totalRatings': reviewsSnapshot.docs.length,
+        });
+      }
+
+      // Call callback if provided
+      widget.onReviewAdded?.call();
+
+      setState(() {
+        _isSubmitting = false;
       });
 
       if (mounted) {
-        Navigator.of(context).pop(true);
+        Navigator.of(context).pop(true); // Return true to indicate success
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cảm ơn bạn đã đánh giá!'),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('Đánh giá của bạn đã được ghi nhận')),
         );
       }
     } catch (e) {
-      debugPrint('Error submitting review: $e');
+      setState(() {
+        _isSubmitting = false;
+      });
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi: ${e.toString()}')),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
       }
     }
   }
@@ -108,167 +144,204 @@ class _RatingReviewDialogState extends State<RatingReviewDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 8,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 40),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
             ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.star,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Đánh giá món ăn',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
+          ],
+        ),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Food info
-                Row(
-                  children: [
-                    if (widget.imageUrl != null) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          widget.imageUrl!,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                            width: 60,
-                            height: 60,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image, color: Colors.grey),
+                // Hiển thị badge cho admin nếu là admin
+                if (widget.isAdmin)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade700,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.admin_panel_settings,
+                            color: Colors.white, size: 16),
+                        SizedBox(width: 6),
+                        Text(
+                          'ADMIN',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                Text(
+                  widget.isAdmin
+                      ? 'Đánh giá với tư cách Admin'
+                      : 'Đánh giá món ăn',
+                  style: AppTheme.subheadingStyle.copyWith(fontSize: 20),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.productName,
+                  style:
+                      AppTheme.bodyStyle.copyWith(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                RatingBar(
+                  rating: _rating,
+                  size: 40,
+                  allowRating: true,
+                  onRatingChanged: (value) {
+                    setState(() {
+                      _rating = value;
+                    });
+                  },
+                  alignment: MainAxisAlignment.center,
+                  showText: false,
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 10),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
-                      const SizedBox(width: 12),
                     ],
-                    Expanded(
+                  ),
+                  child: TextFormField(
+                    controller: _reviewController,
+                    decoration: InputDecoration(
+                      hintText: 'Chia sẻ ý kiến của bạn về món ăn này...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide:
+                            BorderSide(color: AppTheme.primaryColor, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      contentPadding: const EdgeInsets.all(16),
+                      prefixIcon: Icon(Icons.rate_review,
+                          color: AppTheme.primaryColor.withValues(alpha: 150)),
+                    ),
+                    maxLines: 4,
+                    style: const TextStyle(fontSize: 16),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Vui lòng nhập đánh giá';
+                      }
+                      if (value.trim().length < 5) {
+                        return 'Đánh giá phải có ít nhất 5 ký tự';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 28),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.grey.shade400),
+                        ),
+                      ),
                       child: Text(
-                        widget.foodName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
+                        'Hủy',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
                           fontSize: 16,
                         ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Rating stars
-                const Text(
-                  'Xếp hạng:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    5,
-                    (index) => IconButton(
-                      icon: Icon(
-                        index < _rating ? Icons.star : Icons.star_border,
-                        color: index < _rating
-                            ? AppTheme.ratingColor
-                            : Colors.grey,
-                        size: 36,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _rating = index + 1;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Review field
-                const Text(
-                  'Nhận xét của bạn:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _reviewController,
-                  decoration: InputDecoration(
-                    hintText: 'Chia sẻ trải nghiệm của bạn...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: AppTheme.primaryColor,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                  maxLines: 4,
-                ),
-                const SizedBox(height: 24),
-
-                // Action buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Hủy'),
-                    ),
-                    const SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: _isSubmitting ? null : _submitReview,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 2,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: _isSubmitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
+                          ? const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Text('Đang gửi...'),
+                              ],
                             )
-                          : const Text('Gửi đánh giá'),
+                          : const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.send),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Gửi đánh giá',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

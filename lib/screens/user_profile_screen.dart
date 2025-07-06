@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie/constant/app_color.dart';
+import 'package:foodie/admin/admin_screen.dart';
 
 import 'login_screen.dart';
 
@@ -18,6 +19,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   bool _isEditing = false;
   bool _isLoading = false;
+  bool _isAdmin = false;
 
   // Controllers cho các trường
   final TextEditingController _nameController = TextEditingController();
@@ -39,6 +41,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     try {
       final user = _auth.currentUser;
       if (user != null) {
+        // Check if user is admin
+        setState(() {
+          _isAdmin = user.email == 'admin@foodstore.com';
+        });
+
         final userData =
             await _firestore.collection('users').doc(user.uid).get();
 
@@ -303,26 +310,146 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildSignOutButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: TextButton(
-        onPressed: _signOut,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: AppColor.primaryColor),
+    return Column(
+      children: [
+        if (_isAdmin) ...[
+          Container(
+            margin: EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.blue.shade700, Colors.indigo.shade800],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.shade700.withValues(alpha: 100),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Row(
+                        children: [
+                          Icon(Icons.admin_panel_settings,
+                              color: Colors.blue.shade700),
+                          SizedBox(width: 8),
+                          Text('Chuyển đổi chế độ Admin',
+                              style: TextStyle(fontSize: 18)),
+                        ],
+                      ),
+                      content: Text(
+                        'Bạn có quyền quản trị viên. Bạn có muốn chuyển sang giao diện quản lý không?',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text('Để sau'),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade700,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const AdminScreen()),
+                            );
+                          },
+                          child: Text('Chuyển ngay',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 30),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.admin_panel_settings,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Quyền Quản Trị Viên',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Nhấn để chuyển sang giao diện quản lý',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 220),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+        SizedBox(
+          width: double.infinity,
+          child: TextButton(
+            onPressed: _signOut,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: AppColor.primaryColor),
+              ),
+            ),
+            child: Text(
+              'Đăng xuất',
+              style: TextStyle(
+                color: AppColor.primaryColor,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
-        child: Text(
-          'Đăng xuất',
-          style: TextStyle(
-            color: AppColor.primaryColor,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      ],
     );
   }
 }

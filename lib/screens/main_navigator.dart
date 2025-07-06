@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:foodie/constant/app_theme.dart';
 import 'package:foodie/screens/cart_provider.dart';
 import 'package:foodie/screens/cart_screen.dart';
-import 'package:foodie/screens/dashboard_screen.dart';
 import 'package:foodie/screens/order_history_screen.dart';
 import 'package:foodie/screens/profile_screen.dart';
+import 'package:foodie/admin/admin_screen.dart';
+import 'package:foodie/screens/home_screen.dart';
 
 class MainNavigator extends StatefulWidget {
   final bool isAdmin;
@@ -49,7 +50,9 @@ class _MainNavigatorState extends State<MainNavigator>
         controller: _tabController,
         physics: const NeverScrollableScrollPhysics(), // Disable swiping
         children: [
-          const DashboardScreen(),
+          widget.isAdmin
+              ? const AdminScreen()
+              : const HomeScreen(), // Use proper screen based on admin status
           const OrderHistoryScreen(),
           const CartScreen(),
           const ProfileScreen(),
