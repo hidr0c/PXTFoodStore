@@ -5,6 +5,7 @@ import 'package:foodie/admin/admin_screen.dart';
 import 'package:foodie/constant/app_theme.dart';
 import 'package:foodie/screens/cart_screen.dart';
 import 'package:foodie/screens/item_details_screen.dart';
+import 'package:foodie/screens/bottom_appbar_menu.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isAdmin;
@@ -125,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         actions: [
-          // Nút chuyển đến giao diện admin (chỉ hiển thị nếu người dùng là admin)
+          // Nút chuyển đến giao diện admin (chỉ hiển +thị nếu người dùng là admin)
           if (widget.isAdmin)
             IconButton(
               icon: Icon(Icons.admin_panel_settings),
@@ -164,11 +165,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 26),
-                          blurRadius: 10,
-                          offset: Offset(0, 2),
+                          color:
+                              Colors.black.withOpacity(0.08), // lighter shadow
+                          blurRadius: 6, // less blur
+                          offset: Offset(0, 1), // less offset
                         ),
                       ],
+                      border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 1), // thinner border
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -190,9 +195,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 51),
-                        blurRadius: 10,
-                        offset: Offset(0, 2),
+                        color: Colors.black.withOpacity(0.08), // lighter shadow
+                        blurRadius: 6, // less blur
+                        offset: Offset(0, 1), // less offset
                       ),
                     ],
                   ),
@@ -209,6 +214,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (context) => _buildFilterBottomSheet(),
                       );
                     },
+                    style: IconButton.styleFrom(
+                      side: BorderSide(
+                          width: 1, color: Colors.transparent), // thin border
+                      padding: EdgeInsets.all(8),
+                    ),
                   ),
                 ),
               ],
@@ -410,11 +420,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 26),
-                                    blurRadius: 4,
-                                    offset: Offset(0, 2),
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 6,
+                                    offset: Offset(0, 1),
                                   ),
                                 ],
+                                // border: Border.all(color: Colors.grey.shade300, width: 1), // removed border
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -505,6 +516,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 onSelected: (bool selected) {},
                 backgroundColor: Colors.grey[200],
                 selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
+                side: BorderSide(
+                    width: 1, color: Colors.grey.shade300), // thin border
               ),
               SizedBox(width: 8),
               FilterChip(
@@ -512,6 +525,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 onSelected: (bool selected) {},
                 backgroundColor: Colors.grey[200],
                 selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
+                side: BorderSide(
+                    width: 1, color: Colors.grey.shade300), // thin border
               ),
             ],
           ),
@@ -522,6 +537,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 onSelected: (bool selected) {},
                 backgroundColor: Colors.grey[200],
                 selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
+                side: BorderSide(
+                    width: 1, color: Colors.grey.shade300), // thin border
               ),
               SizedBox(width: 8),
               FilterChip(
@@ -529,6 +546,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 onSelected: (bool selected) {},
                 backgroundColor: Colors.grey[200],
                 selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
+                side: BorderSide(
+                    width: 1, color: Colors.grey.shade300), // thin border
               ),
             ],
           ),
@@ -556,6 +575,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     onSelected: (bool selected) {},
                     backgroundColor: Colors.grey[200],
                     selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
+                    side: BorderSide(
+                        width: 1, color: Colors.grey.shade300), // thin border
                   ),
                 ),
             ],
@@ -573,7 +594,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.pop(context);
                   },
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppTheme.primaryColor),
+                    side: BorderSide(
+                        color: AppTheme.primaryColor, width: 1), // thin border
                     padding: EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: Text("Đặt lại"),
@@ -589,6 +611,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     padding: EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(
+                        width: 1, color: AppTheme.primaryColor), // thin border
                   ),
                   child: Text("Áp dụng"),
                 ),

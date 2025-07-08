@@ -23,20 +23,11 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -50,21 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCYo68fWllIKgsQPvqCYjcYBH0O5QXOVa0',
-    appId: '1:1046288103253:web:ad54ac18ef64a1b08f61dc',
-    messagingSenderId: '1046288103253',
-    projectId: 'appnhac2',
-    authDomain: 'appnhac2.firebaseapp.com',
-    databaseURL: 'https://appnhac2-default-rtdb.firebaseio.com',
-    storageBucket: 'appnhac2.firebasestorage.app',
+    apiKey: 'AIzaSyC2KbtB6zid8MvjW-5Cyjg83YcVHBF-6mg',
+    appId: '1:443840733284:web:4b005e0d79416d505fff71',
+    messagingSenderId: '443840733284',
+    projectId: 'food-store-680a4',
+    authDomain: 'food-store-680a4.firebaseapp.com',
+    storageBucket: 'food-store-680a4.firebasestorage.app',
+    measurementId: 'G-1PWCK14MYZ',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDIY6sEsua37QhPmcy8hZRPjjBrjnxT3ag',
-    appId: '1:1046288103253:android:dfac1e44e4e291478f61dc',
-    messagingSenderId: '1046288103253',
-    projectId: 'appnhac2',
-    databaseURL: 'https://appnhac2-default-rtdb.firebaseio.com',
-    storageBucket: 'appnhac2.firebasestorage.app',
+    apiKey: 'AIzaSyB6wLCUHlp0xSN1JSoagaXOuahJ65-JPLI',
+    appId: '1:443840733284:android:987a77f50f80a9085fff71',
+    messagingSenderId: '443840733284',
+    projectId: 'food-store-680a4',
+    storageBucket: 'food-store-680a4.firebasestorage.app',
   );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDgIa2-TUkDmmHUDljYbmBNGEpb8ezKKXE',
+    appId: '1:443840733284:ios:488ba5ef4e1c0e6c5fff71',
+    messagingSenderId: '443840733284',
+    projectId: 'food-store-680a4',
+    storageBucket: 'food-store-680a4.firebasestorage.app',
+    iosBundleId: 'com.example.foodie',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyDgIa2-TUkDmmHUDljYbmBNGEpb8ezKKXE',
+    appId: '1:443840733284:ios:488ba5ef4e1c0e6c5fff71',
+    messagingSenderId: '443840733284',
+    projectId: 'food-store-680a4',
+    storageBucket: 'food-store-680a4.firebasestorage.app',
+    iosBundleId: 'com.example.foodie',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyC2KbtB6zid8MvjW-5Cyjg83YcVHBF-6mg',
+    appId: '1:443840733284:web:8ecc531d9998699a5fff71',
+    messagingSenderId: '443840733284',
+    projectId: 'food-store-680a4',
+    authDomain: 'food-store-680a4.firebaseapp.com',
+    storageBucket: 'food-store-680a4.firebasestorage.app',
+    measurementId: 'G-JXLG3EN7G1',
+  );
+
 }
