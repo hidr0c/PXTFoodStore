@@ -278,8 +278,11 @@ class _AdminScreenState extends State<AdminScreen> {
                                   children: [
                                     SizedBox(height: 4),
                                     Text('${data['phone'] ?? 'Không có SĐT'}'),
-                                    Text(
-                                        '${data['orderDate'] != null ? DateFormat('dd/MM/yyyy HH:mm').format((data['orderDate'] as Timestamp).toDate()) : 'Không có ngày'}'),
+                                    Text(data['orderDate'] != null
+                                        ? DateFormat('dd/MM/yyyy HH:mm').format(
+                                            (data['orderDate'] as Timestamp)
+                                                .toDate())
+                                        : 'Không có ngày'),
                                     SizedBox(height: 4),
                                     Container(
                                       padding: EdgeInsets.symmetric(

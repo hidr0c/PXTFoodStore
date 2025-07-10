@@ -498,11 +498,11 @@ class _ReviewsSectionState extends State<ReviewsSection> {
                         PopupMenuItem(
                           value: 'edit',
                           child: Row(
-                            children: [
+                            children: const [
                               Icon(Icons.edit,
                                   size: 18, color: AppTheme.textSecondaryColor),
-                              const SizedBox(width: 8),
-                              const Text('Sửa'),
+                              SizedBox(width: 8),
+                              Text('Sửa'),
                             ],
                           ),
                         ),

@@ -72,7 +72,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       const String uploadPreset = "foodie";
 
       // Tạo URL API
-      final String apiUrl =
+      const String apiUrl =
           "https://api.cloudinary.com/v1_1/$cloudName/image/upload";
 
       // Tạo form data để tải lên hình ảnh

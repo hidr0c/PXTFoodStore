@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   carousel_slider: ^5.0.0
   flutter_riverpod: ^2.5.1
+  firebase_storage: ^11.7.7
 
 dev_dependencies:
   flutter_test:

@@ -51,7 +51,7 @@ class _BottomAppBarMenuState extends State<BottomAppBarMenu> {
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 12,

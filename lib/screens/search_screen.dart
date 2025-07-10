@@ -40,7 +40,7 @@ class _SearchScreenState extends State<SearchScreen> {
       final QuerySnapshot nameResults = await FirebaseFirestore.instance
           .collection('foods')
           .where('name', isGreaterThanOrEqualTo: query)
-          .where('name', isLessThanOrEqualTo: query + '\uf8ff')
+          .where('name', isLessThanOrEqualTo: '$query\uf8ff')
           .get();
 
       // Search by category

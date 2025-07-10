@@ -1,22 +1,33 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:foodie/constant/app_theme.dart';
-import 'package:foodie/screens/auth/login_screen.dart';
+// ignore_for_file: prefer_const_constructors
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:foodie/constant/app_color.dart';
+import 'package:foodie/screens/change_password_screen.dart';
+import 'package:foodie/screens/login_screen.dart';
+import 'package:foodie/services/firebase_service.dart';
+import 'package:foodie/widgets/delete_account_dialog.dart';
+import 'package:image_picker/image_picker.dart';
+
+class UserProfileScreen extends StatefulWidget {
+  const UserProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  User? _user;
-  bool _isAdmin = false;
-  bool _isLoading = true;
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  final FirebaseService _firebaseService = FirebaseService();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isEditing = false;
+  bool _isLoading = false;
+  String? _profileImageUrl;
 
   @override
   void initState() {
@@ -30,453 +41,465 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      // Get current user
-      final currentUser = _auth.currentUser;
-      setState(() {
-        _user = currentUser;
-      });
-
-      if (currentUser != null) {
-        // Check if user is admin from SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        bool isAdmin = prefs.getBool('isAdmin') ?? false;
-
-        // Get user data from Firestore        // No need to fetch user data if we're not using it
-        if (mounted) {
+      final user = _firebaseService.auth.currentUser;
+      if (user != null) {
+        final userData = await _firebaseService.getUserData(user.uid);
+        if (userData.exists) {
           setState(() {
-            _isAdmin = isAdmin;
-            _isLoading = false;
-          });
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
+            _nameController.text = userData['fullName'] ?? '';
+            _emailController.text = userData['email'] ?? '';
+            _phoneController.text = userData['phone'] ?? '';
+            _addressController.text = userData['address'] ?? '';
+            _profileImageUrl = userData['profileImageUrl'];
           });
         }
       }
     } catch (e) {
-      debugPrint('Error loading user data: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: Không thể tải thông tin - $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    if (!_isEditing) {
+      setState(() {
+        _isEditing = true;
+      });
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = _firebaseService.auth.currentUser;
+      if (user != null) {
+        await _firebaseService.updateUserProfile(user.uid, {
+          'fullName': _nameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'address': _addressController.text.trim(),
         });
+
+        setState(() {
+          _isEditing = false;
+        });
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cập nhật thông tin thành công')),
+        );
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: Không thể cập nhật - $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _uploadProfilePicture() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
+
+      setState(() {
+        _isLoading = true;
+      });
+
+      final user = _firebaseService.auth.currentUser;
+      if (user != null) {
+        final imageUrl = await _firebaseService.uploadProfilePicture(
+          user.uid,
+          File(pickedFile.path),
+        );
+        setState(() {
+          _profileImageUrl = imageUrl;
+        });
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cập nhật ảnh đại diện thành công')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: Không thể tải ảnh - $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   Future<void> _signOut() async {
-    final confirmed = await showDialog<bool>(
+    bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text('Xác nhận đăng xuất',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text('Bạn có chắc muốn đăng xuất khỏi tài khoản?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Không'),
+            child: Text('Hủy', style: TextStyle(color: Colors.grey.shade600)),
           ),
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColor.primaryColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Có'),
+            child: Text('Đăng xuất', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
 
-    if (confirmed != true) return;
+    if (confirm != true) return;
 
     try {
-      await _auth.signOut();
-
-      // Clear admin flag
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isAdmin', false);
-
-      if (mounted) {
-        // Navigate to login screen and clear the stack
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (route) => false,
-        );
-      }
+      await _firebaseService.signOut();
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const LogIn(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+        (route) => false,
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${e.toString()}')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: Không thể đăng xuất - $e')),
+      );
     }
-  }
-
-  Future<void> _toggleAdminMode() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final newAdminStatus = !_isAdmin;
-
-      await prefs.setBool('isAdmin', newAdminStatus);
-
-      if (mounted) {
-        setState(() {
-          _isAdmin = newAdminStatus;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              newAdminStatus
-                  ? 'Đã chuyển sang chế độ quản trị viên'
-                  : 'Đã chuyển sang chế độ người dùng',
-            ),
-            backgroundColor: newAdminStatus ? AppTheme.secondaryColor : null,
-          ),
-        );
-
-        // Reload the main navigator to reflect admin changes
-        // This would normally be handled by a state management solution
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${e.toString()}')),
-        );
-      }
-    }
-  }
-
-  Future<void> _editProfile() async {
-    // Navigate to edit profile screen
-    // This would be implemented in a real app
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Chức năng sửa thông tin đang được phát triển'),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBgColor,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryColor,
-        title: const Text('Tài khoản'),
+        backgroundColor: AppColor.primaryColor,
+        elevation: 4,
+        title: Text(
+          'Thông tin cá nhân',
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
-          if (_user != null)
-            IconButton(
-              icon: const Icon(Icons.exit_to_app),
-              onPressed: _signOut,
+          IconButton(
+            icon: Icon(_isEditing ? Icons.check : Icons.edit,
+                color: Colors.white),
+            onPressed: _updateProfile,
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: _isEditing ? _uploadProfilePicture : null,
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color: AppColor.primaryColor, width: 3),
+                              image: _profileImageUrl != null
+                                  ? DecorationImage(
+                                      image: NetworkImage(_profileImageUrl!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: _profileImageUrl == null
+                                ? Icon(Icons.person,
+                                    size: 60, color: Colors.grey)
+                                : null,
+                          ),
+                        ),
+                        if (_isEditing)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppColor.primaryColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.camera_alt,
+                                  color: Colors.white, size: 20),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 32),
+                  _buildTextField(
+                    'Họ và tên',
+                    _nameController,
+                    Icons.person,
+                    enabled: _isEditing,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Vui lòng nhập họ và tên' : null,
+                  ),
+                  SizedBox(height: 16),
+                  _buildTextField(
+                    'Email',
+                    _emailController,
+                    Icons.email,
+                    enabled: false,
+                  ),
+                  SizedBox(height: 16),
+                  _buildTextField(
+                    'Số điện thoại',
+                    _phoneController,
+                    Icons.phone,
+                    enabled: _isEditing,
+                    validator: (value) {
+                      if (value!.isEmpty) return 'Vui lòng nhập số điện thoại';
+                      if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                        return 'Số điện thoại phải có 10 chữ số';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  _buildTextField(
+                    'Địa chỉ',
+                    _addressController,
+                    Icons.location_on,
+                    enabled: _isEditing,
+                    maxLines: 3,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Vui lòng nhập địa chỉ' : null,
+                  ),
+                  SizedBox(height: 32),
+                  _buildProfileOptions(),
+                ],
+              ),
+            ),
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColor.primaryColor),
+                ),
+              ),
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _user == null
-              ? _buildNotLoggedIn()
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _buildProfileHeader(),
-                      const SizedBox(height: 24),
-                      _buildProfileActions(),
-                      const SizedBox(height: 24),
-                      _buildAdminSection(),
-                    ],
-                  ),
-                ),
     );
   }
 
-  Widget _buildNotLoggedIn() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/images/login_required.png',
-            width: 120,
-            height: 120,
-            errorBuilder: (context, error, stackTrace) => const Icon(
-              Icons.account_circle,
-              size: 80,
-              color: Colors.grey,
-            ),
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    IconData icon, {
+    bool enabled = true,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey.shade700,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'Bạn chưa đăng nhập',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+        ),
+        SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: enabled ? Colors.white : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: Colors.grey.shade200,
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
+                    ),
+                  ]
+                : null,
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Đăng nhập để sử dụng đầy đủ tính năng',
-            style: TextStyle(
-              color: Colors.grey,
+          child: TextFormField(
+            controller: controller,
+            enabled: enabled,
+            maxLines: maxLines,
+            decoration: InputDecoration(
+              hintText: label,
+              hintStyle: TextStyle(color: Colors.grey.shade400),
+              prefixIcon: Icon(icon, color: AppColor.primaryColor),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.all(16),
             ),
+            validator: validator,
           ),
-          const SizedBox(height: 24),
-          ElevatedButton(
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileOptions() {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const LoginScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => ChangePasswordScreen()),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 32,
-                vertical: 12,
-              ),
+              backgroundColor: AppColor.primaryColor,
+              padding: EdgeInsets.symmetric(vertical: 15),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
+                  borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Đăng nhập'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileHeader() {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: AppTheme.primaryColor,
-              child: Text(
-                _user?.displayName?.isNotEmpty == true
-                    ? _user!.displayName![0].toUpperCase()
-                    : '?',
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _user?.displayName ?? 'Người dùng',
-              style: const TextStyle(
-                fontSize: 20,
+            child: Text(
+              'Đổi mật khẩu',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              _user?.email ?? '',
-              style: TextStyle(
-                color: Colors.grey[600],
-              ),
-            ),
-            if (_isAdmin) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppTheme.secondaryColor,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Text(
-                  'Admin',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: _editProfile,
-              icon: const Icon(Icons.edit),
-              label: const Text('Sửa thông tin'),
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildProfileActions() {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 2,
-      child: Column(
-        children: [
-          _buildProfileActionItem(
-            icon: Icons.receipt_long,
-            title: 'Lịch sử đơn hàng',
-            subtitle: 'Xem các đơn hàng đã đặt',
-            onTap: () {
-              // Navigator.pushNamed(context, '/orders');
+        SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => DeleteAccountDialog(
+                  onConfirm: () async {
+                    try {
+                      await _firebaseService.deleteAccount();
+                      if (!mounted) return;
+                      Navigator.of(context).pushAndRemoveUntil(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const LogIn(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                                opacity: animation, child: child);
+                          },
+                        ),
+                        (route) => false,
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('Lỗi: Không thể xóa tài khoản - $e')),
+                      );
+                    }
+                  },
+                ),
+              );
             },
-          ),
-          const Divider(height: 1),
-          _buildProfileActionItem(
-            icon: Icons.location_on,
-            title: 'Địa chỉ giao hàng',
-            subtitle: 'Quản lý địa chỉ giao hàng của bạn',
-            onTap: () {},
-          ),
-          const Divider(height: 1),
-          _buildProfileActionItem(
-            icon: Icons.payment,
-            title: 'Phương thức thanh toán',
-            subtitle: 'Quản lý phương thức thanh toán',
-            onTap: () {},
-          ),
-          const Divider(height: 1),
-          _buildProfileActionItem(
-            icon: Icons.favorite,
-            title: 'Món ăn yêu thích',
-            subtitle: 'Xem các món ăn yêu thích của bạn',
-            onTap: () {},
-          ),
-          const Divider(height: 1),
-          _buildProfileActionItem(
-            icon: Icons.settings,
-            title: 'Cài đặt',
-            subtitle: 'Thông báo, bảo mật và các cài đặt khác',
-            onTap: () {},
-          ),
-          const Divider(height: 1),
-          _buildProfileActionItem(
-            icon: Icons.help,
-            title: 'Trợ giúp',
-            subtitle: 'Câu hỏi thường gặp và hỗ trợ',
-            onTap: () {},
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileActionItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryColor),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
-    );
-  }
-
-  Widget _buildAdminSection() {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 2,
-      color: _isAdmin
-          ? AppTheme.secondaryColor.withValues(alpha: 26)
-          : null, // 0.1 * 255 ≈ 26
-      child: Column(
-        children: [
-          ListTile(
-            leading: Icon(
-              _isAdmin ? Icons.admin_panel_settings : Icons.person,
-              color: _isAdmin ? AppTheme.secondaryColor : AppTheme.primaryColor,
-            ),
-            title: Text(
-              _isAdmin ? 'Chế độ quản trị viên' : 'Chế độ người dùng',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: _isAdmin ? AppTheme.secondaryColor : null,
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.red),
               ),
             ),
-            subtitle: Text(
-              _isAdmin
-                  ? 'Đang sử dụng tính năng quản trị viên'
-                  : 'Chuyển sang chế độ quản trị viên',
+            child: Text(
+              'Xóa tài khoản',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            trailing: Switch(
-              value: _isAdmin,
-              activeColor: AppTheme.secondaryColor,
-              onChanged: (value) => _toggleAdminMode(),
-            ),
-            onTap: _toggleAdminMode,
           ),
-          if (_isAdmin) ...[
-            const Divider(height: 1),
-            _buildProfileActionItem(
-              icon: Icons.dashboard,
-              title: 'Quản lý sản phẩm',
-              subtitle: 'Thêm, sửa, xóa sản phẩm',
-              onTap: () {},
+        ),
+        SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: TextButton(
+            onPressed: _signOut,
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: AppColor.primaryColor),
+              ),
             ),
-            const Divider(height: 1),
-            _buildProfileActionItem(
-              icon: Icons.receipt,
-              title: 'Quản lý đơn hàng',
-              subtitle: 'Xem và cập nhật trạng thái đơn hàng',
-              onTap: () {},
+            child: Text(
+              'Đăng xuất',
+              style: TextStyle(
+                color: AppColor.primaryColor,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const Divider(height: 1),
-            _buildProfileActionItem(
-              icon: Icons.people,
-              title: 'Quản lý người dùng',
-              subtitle: 'Xem và quản lý tài khoản người dùng',
-              onTap: () {},
-            ),
-            const Divider(height: 1),
-            _buildProfileActionItem(
-              icon: Icons.bar_chart,
-              title: 'Thống kê',
-              subtitle: 'Xem báo cáo và thống kê',
-              onTap: () {},
-            ),
-          ],
-        ],
-      ),
+          ),
+        ),
+      ],
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    super.dispose();
   }
 }

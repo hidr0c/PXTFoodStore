@@ -27,7 +27,7 @@ class _AdminScreenState extends State<AdminScreen>
   int _currentIndex = 0;
   late TabController _tabController;
 
-  List<Map<String, dynamic>> _navItems = [
+  final List<Map<String, dynamic>> _navItems = [
     {'icon': Icons.dashboard, 'label': 'Dashboard'},
     {'icon': Icons.restaurant_menu, 'label': 'Món ăn'},
     {'icon': Icons.receipt_long, 'label': 'Đơn hàng'},
@@ -202,7 +202,7 @@ class _AdminScreenState extends State<AdminScreen>
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  children: const [
                     Text(
                       'Xin chào, Admin',
                       style: TextStyle(
@@ -339,8 +339,10 @@ class _AdminScreenState extends State<AdminScreen>
                           children: [
                             SizedBox(height: 4),
                             Text('${data['phone'] ?? 'Không có SĐT'}'),
-                            Text(
-                                '${data['orderDate'] != null ? DateFormat('dd/MM/yyyy HH:mm').format((data['orderDate'] as Timestamp).toDate()) : 'Không có ngày'}'),
+                            Text(data['orderDate'] != null
+                                ? DateFormat('dd/MM/yyyy HH:mm').format(
+                                    (data['orderDate'] as Timestamp).toDate())
+                                : 'Không có ngày'),
                             SizedBox(height: 4),
                             Container(
                               padding: EdgeInsets.symmetric(

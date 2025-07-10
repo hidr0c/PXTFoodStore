@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:foodie/admin/admin_screen.dart';
-import 'package:foodie/screens/home_screen.dart';
+import 'package:foodie/screens/main_navigator.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -12,11 +11,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Redirect to the appropriate screen based on user role
-    if (isAdmin) {
-      return const AdminScreen();
-    } else {
-      return const HomeScreen();
-    }
+    // Use MainNavigator to provide the main app structure
+    return MainNavigator(isAdmin: isAdmin);
   }
 }

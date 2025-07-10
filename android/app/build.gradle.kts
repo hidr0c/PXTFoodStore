@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -7,6 +9,29 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+fun localPropertiesFile(rootDir: File): File {
+    return File(rootDir, "local.properties")
+}
+
+fun readLocalProperties(rootDir: File): Properties {
+    val properties = Properties()
+    val localPropertiesFile = localPropertiesFile(rootDir)
+    if (localPropertiesFile.exists()) {
+        properties.load(localPropertiesFile.inputStream())
+    }
+    return properties
+}
+
+// Read the flutter properties from the local.properties file
+val flutterProperties = readLocalProperties(project.rootDir)
+val flutterRoot = flutterProperties.getProperty("flutter.sdk")
+if (flutterRoot == null) {
+    throw GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+val flutterVersionCode = flutterProperties.getProperty("flutter.versionCode")
+val flutterVersionName = flutterProperties.getProperty("flutter.versionName")
 
 android {
     namespace = "com.example.foodie"
@@ -29,8 +54,8 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = flutterVersionCode.toInt()
+        versionName = flutterVersionName
     }
 
     buildTypes {
@@ -44,4 +69,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
 }

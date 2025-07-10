@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:foodie/screens/login_screen.dart';
 import 'package:foodie/constant/app_theme.dart';
-import 'package:foodie/admin/admin_screen.dart';
 import 'package:foodie/screens/dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -60,35 +59,19 @@ class _SplashScreenState extends State<SplashScreen>
       final user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
-        // User is logged in, check if admin
-        if (user.email == 'admin@foodstore.com') {
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  const AdminScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-              transitionDuration: const Duration(milliseconds: 700),
-            ),
-          );
-        } else {
-          // Regular user, go to dashboard
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  const DashboardScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-              transitionDuration: const Duration(milliseconds: 700),
-            ),
-          );
-        }
+        // User is logged in, go to dashboard screen which will handle admin/user routing
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const DashboardScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 700),
+          ),
+        );
       } else {
         // Not logged in, go to login screen
         Navigator.pushReplacement(

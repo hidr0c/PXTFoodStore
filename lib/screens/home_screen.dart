@@ -1,11 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:foodie/admin/admin_screen.dart';
 import 'package:foodie/constant/app_theme.dart';
 import 'package:foodie/screens/cart_screen.dart';
 import 'package:foodie/screens/item_details_screen.dart';
-import 'package:foodie/screens/bottom_appbar_menu.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isAdmin;
@@ -23,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<QueryDocumentSnapshot> _foods = [];
   List<QueryDocumentSnapshot> _featuredFoods = [];
   bool _isLoading = true;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -65,7 +64,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (mounted) {
         setState(() {
-          _foods = foodsSnapshot.docs;
+          _foods = foodsSnapshot.docs.where((doc) {
+            if (_searchQuery.isEmpty) return true;
+            final data = doc.data() as Map<String, dynamic>;
+            return (data['name'] ?? '')
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase());
+          }).toList();
           _isLoading = false;
         });
       }
@@ -107,7 +112,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _filterFoods(String query) {
-    // Thực hiện logic lọc món ăn theo query
+    setState(() {
+      _searchQuery = query;
+    });
     _loadFoods();
   }
 
@@ -118,33 +125,34 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(
           "PXT Food Store",
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Lobster',
-            fontSize: 24,
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        backgroundColor: AppTheme.primaryColor,
-        elevation: 0,
-        actions: [
-          // Nút chuyển đến giao diện admin (chỉ hiển +thị nếu người dùng là admin)
-          if (widget.isAdmin)
-            IconButton(
-              icon: Icon(Icons.admin_panel_settings),
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => AdminScreen()),
-                );
-              },
-              tooltip: "Vào giao diện quản trị",
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.primaryColor,
+                AppTheme.primaryColor.withOpacity(0.8)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          // Nút giỏ hàng với badge số lượng
+          ),
+        ),
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.3),
+        actions: [
           IconButton(
             icon: Icon(Icons.shopping_cart, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CartScreen()),
+                MaterialPageRoute(builder: (context) => const CartScreen()),
               );
             },
           ),
@@ -155,42 +163,63 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Search bar & Filter
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: Colors.black.withOpacity(0.15), width: 1),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade200,
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
                         prefixIcon:
                             Icon(Icons.search, color: AppTheme.primaryColor),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(Icons.clear, color: Colors.grey),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  _filterFoods('');
+                                },
+                              )
+                            : null,
                         hintText: "Tìm kiếm món ăn...",
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 15),
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 15, horizontal: 16),
                       ),
+                      onChanged: _filterFoods,
                       onSubmitted: _filterFoods,
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                SizedBox(width: 12),
                 Container(
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                        color: Colors.black.withOpacity(0.15), width: 1),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade200,
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: IconButton(
                     icon: Icon(Icons.filter_list, color: Colors.white),
                     onPressed: () {
-                      // Hiển thị dialog filter nâng cao
                       showModalBottomSheet(
                         context: context,
                         shape: RoundedRectangleBorder(
@@ -201,9 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     style: IconButton.styleFrom(
-                      side: BorderSide(
-                          width: 1, color: Colors.transparent), // thin border
-                      padding: EdgeInsets.all(8),
+                      padding: EdgeInsets.all(12),
                     ),
                   ),
                 ),
@@ -214,21 +241,25 @@ class _HomeScreenState extends State<HomeScreen> {
           // Featured Foods Carousel
           if (_featuredFoods.isNotEmpty) ...[
             Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Text(
                 "Món nổi bật",
-                style: AppTheme.subheadingStyle,
+                style: AppTheme.subheadingStyle.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             CarouselSlider(
               options: CarouselOptions(
-                height: 180,
+                height: 200,
                 viewportFraction: 0.85,
                 autoPlay: true,
                 enlargeCenterPage: true,
                 autoPlayInterval: Duration(seconds: 3),
                 autoPlayAnimationDuration: Duration(milliseconds: 800),
-                autoPlayCurve: Curves.fastOutSlowIn,
+                autoPlayCurve: Curves.easeInOut,
               ),
               items: _featuredFoods.map((doc) {
                 Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -244,67 +275,77 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         );
                       },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: EdgeInsets.symmetric(horizontal: 5.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          image: DecorationImage(
-                            image: NetworkImage(data['imageUrl'] ?? ''),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
                         child: Container(
+                          width: MediaQuery.of(context).size.width,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withValues(alpha: 179),
-                              ],
+                            image: DecorationImage(
+                              image: NetworkImage(data['imageUrl'] ?? ''),
+                              fit: BoxFit.cover,
+                              onError: (exception, stackTrace) =>
+                                  Icon(Icons.error),
                             ),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  data['name'] ?? '',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  '${data['price']} VND',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(top: 8),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryColor,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    "Nổi bật",
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.7),
+                                ],
+                              ),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    data['name'] ?? '',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 12,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '${data['price'] ?? 0} VND',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  Container(
+                                    margin: EdgeInsets.only(top: 8),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryColor,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      "Nổi bật",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -326,18 +367,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: _categories.map((category) {
                   final isSelected = category == _selectedCategory;
                   return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: InkWell(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: GestureDetector(
                       onTap: () => _onCategorySelected(category),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 300),
                         padding: EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+                            horizontal: 18.0, vertical: 10.0),
                         decoration: BoxDecoration(
                           color:
                               isSelected ? AppTheme.primaryColor : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: Colors.black.withOpacity(0.15), width: 1),
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : Colors.grey.shade300,
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.shade200,
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Text(
                           category,
@@ -345,9 +398,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: isSelected
                                 ? Colors.white
                                 : AppTheme.textSecondaryColor,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -357,19 +409,23 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 16),
 
           // Food List
           Expanded(
             child: _isLoading
                 ? Center(
                     child:
-                        CircularProgressIndicator(color: AppTheme.primaryColor))
+                        CircularProgressIndicator(color: AppTheme.primaryColor),
+                  )
                 : _foods.isEmpty
                     ? Center(
                         child: Text(
                           'Không tìm thấy món ăn nào',
-                          style: AppTheme.bodyStyle,
+                          style: AppTheme.bodyStyle.copyWith(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                       )
                     : GridView.builder(
@@ -377,15 +433,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           childAspectRatio: 0.75,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
                         ),
                         itemCount: _foods.length,
                         itemBuilder: (context, index) {
                           DocumentSnapshot doc = _foods[index];
                           Map<String, dynamic> data =
                               doc.data() as Map<String, dynamic>;
-                          return InkWell(
+                          return GestureDetector(
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -395,29 +451,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               );
                             },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: Colors.black.withOpacity(0.15),
-                                    width: 1),
-                              ),
+                            child: Card(
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(8)),
+                                        top: Radius.circular(12)),
                                     child: Image.network(
                                       data['imageUrl'] ?? '',
                                       height: 120,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Center(
+                                                  child: Icon(Icons.error,
+                                                      color: Colors.grey)),
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(10.0),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -427,19 +484,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
+                                            color: AppTheme.textPrimaryColor,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                        SizedBox(height: 4),
+                                        SizedBox(height: 6),
                                         Text(
-                                          '${data['price']} VND',
+                                          '${data['price'] ?? 0} VND',
                                           style: TextStyle(
                                             color: AppTheme.primaryColor,
                                             fontWeight: FontWeight.bold,
+                                            fontSize: 14,
                                           ),
                                         ),
-                                        SizedBox(height: 4),
+                                        SizedBox(height: 6),
                                         Row(
                                           children: [
                                             Icon(Icons.star,
@@ -447,7 +506,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             SizedBox(width: 4),
                                             Text(
                                               '${(data['rating']?.toDouble() ?? 0.0).toStringAsFixed(1)}',
-                                              style: TextStyle(fontSize: 12),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey.shade600,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -468,101 +530,71 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildFilterBottomSheet() {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Lọc theo tiêu chí",
-            style: AppTheme.headingStyle,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Lọc theo tiêu chí",
+                style: AppTheme.headingStyle.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, color: Colors.grey.shade600),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
-          SizedBox(height: 20),
-
-          // Filter options
+          SizedBox(height: 16),
           Text(
             "Giá:",
-            style: AppTheme.subheadingStyle,
+            style: AppTheme.subheadingStyle.copyWith(fontSize: 16),
           ),
-          SizedBox(height: 10),
-          Row(
+          SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
             children: [
-              FilterChip(
-                label: Text("Dưới 50.000đ"),
-                onSelected: (bool selected) {},
-                backgroundColor: Colors.grey[200],
-                selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
-                side: BorderSide(
-                    width: 1, color: Colors.grey.shade300), // thin border
-              ),
-              SizedBox(width: 8),
-              FilterChip(
-                label: Text("50.000đ - 100.000đ"),
-                onSelected: (bool selected) {},
-                backgroundColor: Colors.grey[200],
-                selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
-                side: BorderSide(
-                    width: 1, color: Colors.grey.shade300), // thin border
-              ),
+              _buildFilterChip("Dưới 50.000đ"),
+              _buildFilterChip("50.000đ - 100.000đ"),
+              _buildFilterChip("100.000đ - 200.000đ"),
+              _buildFilterChip("Trên 200.000đ"),
             ],
           ),
-          Row(
-            children: [
-              FilterChip(
-                label: Text("100.000đ - 200.000đ"),
-                onSelected: (bool selected) {},
-                backgroundColor: Colors.grey[200],
-                selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
-                side: BorderSide(
-                    width: 1, color: Colors.grey.shade300), // thin border
-              ),
-              SizedBox(width: 8),
-              FilterChip(
-                label: Text("Trên 200.000đ"),
-                onSelected: (bool selected) {},
-                backgroundColor: Colors.grey[200],
-                selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
-                side: BorderSide(
-                    width: 1, color: Colors.grey.shade300), // thin border
-              ),
-            ],
-          ),
-
-          SizedBox(height: 15),
+          SizedBox(height: 16),
           Text(
             "Đánh giá:",
-            style: AppTheme.subheadingStyle,
+            style: AppTheme.subheadingStyle.copyWith(fontSize: 16),
           ),
-          SizedBox(height: 10),
-          Row(
+          SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
             children: [
               for (int i = 3; i <= 5; i++)
-                Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text("$i"),
-                        Icon(Icons.star, size: 16, color: Colors.amber),
-                        Text("+"),
-                      ],
-                    ),
-                    onSelected: (bool selected) {},
-                    backgroundColor: Colors.grey[200],
-                    selectedColor: AppTheme.primaryColor.withValues(alpha: 102),
-                    side: BorderSide(
-                        width: 1, color: Colors.grey.shade300), // thin border
-                  ),
+                _buildFilterChip(
+                  "$i+",
+                  icon: Icon(Icons.star, size: 16, color: Colors.amber),
                 ),
             ],
           ),
-
-          SizedBox(height: 20),
-
-          // Action buttons
+          SizedBox(height: 24),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Expanded(
                 child: OutlinedButton(
@@ -570,27 +602,42 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.pop(context);
                   },
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                        color: AppTheme.primaryColor, width: 1), // thin border
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text("Đặt lại"),
+                  child: Text(
+                    "Đặt lại",
+                    style: TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    // Áp dụng filter
-                    Navigator.pop(context);
+                    Navigator.pop(context); // Apply filter logic if needed
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    side: BorderSide(
-                        width: 1, color: AppTheme.primaryColor), // thin border
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 2,
                   ),
-                  child: Text("Áp dụng"),
+                  child: Text(
+                    "Áp dụng",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -598,5 +645,38 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildFilterChip(String label, {Icon? icon}) {
+    return FilterChip(
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            icon,
+            SizedBox(width: 4),
+          ],
+          Text(label),
+        ],
+      ),
+      onSelected: (bool selected) {}, // Add filter logic here
+      backgroundColor: Colors.white,
+      selectedColor: AppTheme.primaryColor.withOpacity(0.4),
+      labelStyle: TextStyle(
+        color: Colors.grey.shade700,
+        fontWeight: FontWeight.w500,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade300),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }
