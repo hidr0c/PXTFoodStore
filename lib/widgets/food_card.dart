@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import '../constant/theme_constants.dart';
 import 'network_image.dart';
@@ -29,7 +31,7 @@ class FoodCard extends StatelessWidget {
     final cardHeight = cardWidth / 0.7;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(8),
       splashColor: ThemeConstants.primaryColor.withValues(alpha: 0.1),
       onTap: onTap,
       child: AnimatedContainer(
@@ -42,23 +44,9 @@ class FoodCard extends StatelessWidget {
           vertical: ThemeConstants.spacingXS / 2,
         ),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              ThemeConstants.surfaceColor.withValues(alpha: 0.95),
-              ThemeConstants.primaryColor.withValues(alpha: 0.08),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: ThemeConstants.primaryColor.withValues(alpha: 0.10),
-              blurRadius: 16,
-              offset: Offset(0, 8),
-            ),
-            ...ThemeConstants.shadowSm,
-          ],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.black.withOpacity(0.15), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,8 +57,8 @@ class FoodCard extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
                     ),
                     child: NetworkImageWithFallback(
                       imageUrl: imageUrl,

@@ -89,6 +89,7 @@ class _OrdersManageScreenState extends State<OrdersManageScreen> {
       appBar: AppBar(
         title: const Text('Quản lý đơn hàng'),
         backgroundColor: AppColor.primaryColor,
+        elevation: 0,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -133,8 +134,10 @@ class _OrdersManageScreenState extends State<OrdersManageScreen> {
                     color: backgroundColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                          color: Colors.black.withOpacity(0.1), width: 1),
                     ),
-                    elevation: 3,
+                    elevation: 0,
                     margin: const EdgeInsets.only(bottom: 10),
                     child: Padding(
                       padding: const EdgeInsets.all(15),

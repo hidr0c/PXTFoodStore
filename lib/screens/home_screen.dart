@@ -162,18 +162,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              Colors.black.withOpacity(0.08), // lighter shadow
-                          blurRadius: 6, // less blur
-                          offset: Offset(0, 1), // less offset
-                        ),
-                      ],
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                          color: Colors.grey.shade300,
-                          width: 1), // thinner border
+                          color: Colors.black.withOpacity(0.15), width: 1),
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -192,14 +183,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08), // lighter shadow
-                        blurRadius: 6, // less blur
-                        offset: Offset(0, 1), // less offset
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                        color: Colors.black.withOpacity(0.15), width: 1),
                   ),
                   child: IconButton(
                     icon: Icon(Icons.filter_list, color: Colors.white),
@@ -350,13 +336,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           color:
                               isSelected ? AppTheme.primaryColor : Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 26),
-                              blurRadius: 4,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
+                          border: Border.all(
+                              color: Colors.black.withOpacity(0.15), width: 1),
                         ),
                         child: Text(
                           category,
@@ -417,22 +398,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 6,
-                                    offset: Offset(0, 1),
-                                  ),
-                                ],
-                                // border: Border.all(color: Colors.grey.shade300, width: 1), // removed border
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: Colors.black.withOpacity(0.15),
+                                    width: 1),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(12)),
+                                        top: Radius.circular(8)),
                                     child: Image.network(
                                       data['imageUrl'] ?? '',
                                       height: 120,

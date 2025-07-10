@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../screens/cart_provider.dart';
@@ -19,10 +21,11 @@ class CartSummaryCard extends StatelessWidget {
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: ThemeConstants.primaryColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: ThemeConstants.primaryColor.withValues(alpha: 0.3),
+              color: Colors.black.withOpacity(0.15),
+              width: 1,
             ),
           ),
           child: Row(

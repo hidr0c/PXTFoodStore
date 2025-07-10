@@ -23,6 +23,7 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
         ),
         centerTitle: true,
         backgroundColor: Colors.orange,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -83,14 +84,7 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.3),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          border: Border.all(color: Colors.black.withOpacity(0.15), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

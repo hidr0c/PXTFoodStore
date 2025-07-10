@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -504,10 +506,10 @@ class _ReviewsSectionState extends State<ReviewsSection> {
                             ],
                           ),
                         ),
-                      PopupMenuItem(
+                      const PopupMenuItem(
                         value: 'delete',
                         child: Row(
-                          children: const [
+                          children: [
                             Icon(Icons.delete, size: 18, color: Colors.red),
                             SizedBox(width: 8),
                             Text('Xóa', style: TextStyle(color: Colors.red)),

@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:foodie/screens/home_screen.dart';
 import 'order_history_screen.dart';

@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:foodie/constant/app_theme.dart';
@@ -154,16 +156,8 @@ class _AdminScreenState extends State<AdminScreen>
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: Offset(0, -2),
-            ),
-          ],
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+          border: Border(
+            top: BorderSide(color: Colors.black.withOpacity(0.15), width: 1.0),
           ),
         ),
         child: TabBar(
@@ -327,13 +321,15 @@ class _AdminScreenState extends State<AdminScreen>
                     var data = doc.data() as Map<String, dynamic>;
 
                     return Card(
-                      elevation: 2,
-                      margin: EdgeInsets.only(bottom: 12),
+                      elevation: 0,
+                      margin: EdgeInsets.only(bottom: 8),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                            color: Colors.black.withOpacity(0.15), width: 1),
                       ),
                       child: ListTile(
-                        contentPadding: EdgeInsets.all(12),
+                        contentPadding: EdgeInsets.all(8),
                         title: Text(
                           '${data['customerName'] ?? 'Không có tên'}',
                           style: TextStyle(fontWeight: FontWeight.bold),
@@ -395,17 +391,11 @@ class _AdminScreenState extends State<AdminScreen>
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.2),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.black.withOpacity(0.15), width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

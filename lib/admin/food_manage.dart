@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, prefer_const_constructors
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie/constant/app_color.dart';
@@ -105,6 +107,7 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
         ),
         centerTitle: true,
         backgroundColor: Colors.orange,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -185,16 +188,22 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
               decoration: BoxDecoration(
                 color: selectedCategory == category
                     ? Colors.orange[300]
-                    : Colors.grey.shade300,
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: selectedCategory == category
+                      ? Colors.transparent
+                      : Colors.black.withOpacity(0.15),
+                  width: 1,
+                ),
               ),
               child: Center(
                 child: Text(
                   category,
                   style: TextStyle(
                     color: selectedCategory == category
-                        ? Colors.black87
-                        : Colors.black54,
+                        ? Colors.white
+                        : Colors.black87,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -210,82 +219,82 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
   // Widget hiển thị mỗi món ăn
   Widget _buildFoodItem(
       QueryDocumentSnapshot food, int quantity, int maxQuantity) {
-    bool locked = isFoodLocked(quantity, maxQuantity);
-
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.orange[50],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.orange[200]!, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.orange[100]!.withValues(alpha: 0.3),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Colors.black.withOpacity(0.15), width: 1),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              food['imageUrl'],
-              width: 100,
-              height: 100,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  food['name'],
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54,
-                  ),
+          Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  food['imageUrl'],
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
                 ),
-                Text(
-                  food['description'],
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  "Số lượng: $quantity/$maxQuantity",
-                  style: TextStyle(
-                    color: locked ? Colors.red : Colors.green,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                if (!locked)
-                  SizedBox(
-                    width: 120,
-                    child: ElevatedButton(
-                      onPressed: () => _addFillQuantity(food.id, maxQuantity),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        textStyle: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      food['name'],
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
                       ),
-                      child: const Text("Thêm số lượng",
-                          style: TextStyle(color: Colors.white)),
                     ),
-                  ),
-              ],
-            ),
+                    Text(
+                      food['description'],
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      "Số lượng: $quantity/$maxQuantity",
+                      style: TextStyle(
+                        color: isFoodLocked(quantity, maxQuantity)
+                            ? Colors.red
+                            : Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (!isFoodLocked(quantity, maxQuantity))
+                      SizedBox(
+                        width: 120,
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              _addFillQuantity(food.id, maxQuantity),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            textStyle: const TextStyle(fontSize: 14),
+                          ),
+                          child: const Text("Thêm số lượng",
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          Column(
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 "${food['price']} VNĐ",
@@ -294,7 +303,6 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
               IconButton(
                 icon: Icon(Icons.delete, color: Colors.red),
                 onPressed: () => _deleteFood(food.id),
