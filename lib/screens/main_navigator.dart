@@ -9,6 +9,7 @@ import 'package:foodie/screens/order_history_screen.dart';
 import 'package:foodie/screens/home_screen.dart';
 import 'package:foodie/screens/user_profile_screen.dart';
 import 'package:foodie/admin/admin_screen.dart';
+import 'package:foodie/screens/ai_chat_screen.dart';
 
 class MainNavigator extends StatefulWidget {
   // Parameter for admin status
@@ -30,7 +31,7 @@ class _MainNavigatorState extends State<MainNavigator>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         setState(() {});
@@ -54,6 +55,7 @@ class _MainNavigatorState extends State<MainNavigator>
           widget.isAdmin ? AdminScreen() : HomeScreen(),
           OrderHistoryScreen(),
           CartScreen(),
+          AIChatScreen(),
           UserProfileScreen(),
         ],
       ),
@@ -64,13 +66,6 @@ class _MainNavigatorState extends State<MainNavigator>
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.3),
-              blurRadius: 10,
-              offset: Offset(0, -4),
-            ),
-          ],
         ),
         child: SafeArea(
           child: TabBar(
@@ -100,6 +95,10 @@ class _MainNavigatorState extends State<MainNavigator>
                 icon: Icons.shopping_cart_outlined,
                 label: 'Giỏ hàng',
                 badge: context.watch<CartProvider>().itemCount,
+              ),
+              _buildTabItem(
+                icon: Icons.chat_bubble_outline,
+                label: 'Hỗ trợ',
               ),
               _buildTabItem(
                 icon: Icons.person_outlined,
