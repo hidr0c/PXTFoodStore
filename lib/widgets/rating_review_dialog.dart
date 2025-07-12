@@ -63,7 +63,8 @@ class _RatingReviewDialogState extends State<RatingReviewDialog> {
       String userName = 'Admin';
       String userAvatar = '';
 
-      if (!widget.isAdmin && user != null) {
+      if (user != null) {
+        // Always get the real user name regardless of admin status
         userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -71,8 +72,10 @@ class _RatingReviewDialogState extends State<RatingReviewDialog> {
 
         if (userDoc.exists) {
           final userData = userDoc.data() as Map<String, dynamic>;
-          userName = userData['fullName'] ?? 'Người dùng';
+          userName = userData['fullName'] ?? user.displayName ?? 'Người dùng';
           userAvatar = userData['avatarUrl'] ?? '';
+        } else {
+          userName = user.displayName ?? 'Người dùng';
         }
       }
 

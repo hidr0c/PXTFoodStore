@@ -171,10 +171,15 @@ class CartProvider with ChangeNotifier {
     saveCart();
   }
 
-  void clearCart() {
+  Future<void> clearCart() async {
     _items = {};
     notifyListeners();
-    saveCart();
+    await saveCart();
+  }
+
+  void forceRefresh() {
+    _items = {};
+    notifyListeners();
   }
 
   bool isInCart(String productId) {

@@ -325,58 +325,125 @@ class AIChatService {
     // Convert message to lowercase for easier matching
     final lowerMessage = message.toLowerCase();
 
-    // Food ordering related responses
-    if (lowerMessage.contains('order') || lowerMessage.contains('delivery')) {
-      return 'Bạn có thể đặt món ăn trực tiếp thông qua ứng dụng của chúng tôi. Chỉ cần chọn món ăn yêu thích và thêm vào giỏ hàng, sau đó nhập địa chỉ giao hàng và phương thức thanh toán.';
+    // BURGER related keywords
+    if (lowerMessage.contains('burger') ||
+        lowerMessage.contains('hamburger') ||
+        lowerMessage.contains('cheeseburger')) {
+      if (lowerMessage.contains('best') || lowerMessage.contains('recommend')) {
+        return 'Hamburger bò phô mai của chúng tôi được đánh giá cao nhất, với thịt bò Wagyu nhập khẩu và phô mai Cheddar thơm ngon. Bạn cũng có thể thử burger gà cay nếu thích vị cay!';
+      } else if (lowerMessage.contains('price') ||
+          lowerMessage.contains('cost')) {
+        return 'Các loại burger của chúng tôi có giá từ 55.000đ đến 120.000đ tùy loại. Burger bò phô mai đặc biệt có giá 95.000đ. Tất cả burger đều được phục vụ kèm khoai tây chiên.';
+      } else {
+        return 'Chúng tôi có 8 loại burger khác nhau, từ burger bò cổ điển đến burger gà, burger chay. Burger được làm từ nguyên liệu tươi ngon và phục vụ kèm khoai tây chiên giòn rụm.';
+      }
     }
 
-    // Menu related questions
-    if (lowerMessage.contains('menu') ||
-        lowerMessage.contains('food') ||
-        lowerMessage.contains('dish') ||
-        lowerMessage.contains('eat')) {
-      return 'Thực đơn của chúng tôi có nhiều lựa chọn từ burger, pizza, đồ uống, đến các món ăn phụ. Bạn có thể xem toàn bộ thực đơn tại trang chủ của ứng dụng.';
+    // PIZZA related keywords
+    if (lowerMessage.contains('pizza')) {
+      if (lowerMessage.contains('best') || lowerMessage.contains('recommend')) {
+        return 'Pizza hải sản đặc biệt của chúng tôi rất được ưa chuộng! Đế bánh mỏng giòn, phủ đầy hải sản tươi ngon như tôm, mực, cùng phô mai Mozzarella thượng hạng.';
+      } else if (lowerMessage.contains('price') ||
+          lowerMessage.contains('cost')) {
+        return 'Pizza cỡ nhỏ (20cm) có giá từ 90.000đ, cỡ vừa (28cm) từ 150.000đ và cỡ lớn (36cm) từ 250.000đ. Hiện chúng tôi có chương trình giảm 20% cho pizza cỡ lớn vào thứ Ba.';
+      } else {
+        return 'Menu pizza của chúng tôi có 12 lựa chọn, từ pizza truyền thống như Margherita đến các loại đặc biệt như pizza 4 loại thịt, pizza hải sản cao cấp. Bạn có thể chọn đế dày hoặc mỏng theo ý thích.';
+      }
     }
 
-    // Price related questions
-    if (lowerMessage.contains('price') ||
-        lowerMessage.contains('cost') ||
-        lowerMessage.contains('expensive') ||
-        lowerMessage.contains('cheap')) {
-      return 'Giá cả các món ăn của chúng tôi rất cạnh tranh. Burger từ 50.000đ, Pizza từ 90.000đ, và đồ uống từ 20.000đ. Chúng tôi thường xuyên có các chương trình khuyến mãi đặc biệt!';
+    // CHICKEN related keywords
+    if (lowerMessage.contains('chicken') ||
+        lowerMessage.contains('gà') ||
+        lowerMessage.contains('cánh gà')) {
+      if (lowerMessage.contains('best') || lowerMessage.contains('recommend')) {
+        return 'Cánh gà sốt Buffalo cay của chúng tôi là món rất được yêu thích. Giòn bên ngoài, mềm bên trong và phủ lớp sốt cay ngọt đậm đà.';
+      } else if (lowerMessage.contains('price') ||
+          lowerMessage.contains('cost')) {
+        return 'Cánh gà 6 miếng giá 65.000đ, 12 miếng giá 120.000đ. Gà rán sốt đặc biệt 8 miếng giá 145.000đ. Combo gà rán và khoai tây chiên giá 99.000đ.';
+      } else {
+        return 'Chúng tôi có các món gà đa dạng: gà rán, cánh gà sốt (Buffalo, BBQ, mật ong tỏi), gà nướng, và gà tẩm bột chiên giòn. Tất cả đều được chế biến từ gà tươi ngon mỗi ngày.';
+      }
     }
 
-    // Location or hours related
-    if (lowerMessage.contains('location') ||
-        lowerMessage.contains('address') ||
-        lowerMessage.contains('hour') ||
-        lowerMessage.contains('open') ||
-        lowerMessage.contains('close')) {
-      return 'Cửa hàng chúng tôi mở cửa từ 8:00 sáng đến 22:00 tối mỗi ngày. Bạn có thể tìm thấy cửa hàng gần nhất thông qua tính năng "Vị trí" trong ứng dụng.';
+    // DRINKS related keywords
+    if (lowerMessage.contains('drink') ||
+        lowerMessage.contains('beverage') ||
+        lowerMessage.contains('nước') ||
+        lowerMessage.contains('đồ uống')) {
+      if (lowerMessage.contains('alcohol') ||
+          lowerMessage.contains('beer') ||
+          lowerMessage.contains('wine')) {
+        return 'Xin lỗi, chúng tôi không phục vụ đồ uống có cồn. Nhưng chúng tôi có nhiều loại nước trái cây tươi, sinh tố, nước ngọt và trà đá rất ngon!';
+      } else if (lowerMessage.contains('price') ||
+          lowerMessage.contains('cost')) {
+        return 'Giá đồ uống của chúng tôi dao động từ 20.000đ đến 45.000đ. Nước ngọt từ 20.000đ, sinh tố trái cây từ 35.000đ, và các loại trà đặc biệt từ 25.000đ.';
+      } else {
+        return 'Chúng tôi có nhiều loại đồ uống: nước ngọt các loại, sinh tố (xoài, dâu, bơ), nước ép trái cây tươi, trà đào, trà sữa, cà phê và các loại trà đặc biệt.';
+      }
     }
 
-    // Special deals or discounts
-    if (lowerMessage.contains('deal') ||
+    // DESSERT related keywords
+    if (lowerMessage.contains('dessert') ||
+        lowerMessage.contains('tráng miệng') ||
+        lowerMessage.contains('bánh ngọt') ||
+        lowerMessage.contains('kem')) {
+      if (lowerMessage.contains('best') || lowerMessage.contains('recommend')) {
+        return 'Cheesecake dâu tây của chúng tôi được yêu thích nhất! Được làm từ cream cheese Pháp và dâu tây tươi, kết hợp với đế bánh giòn từ biscuit bơ.';
+      } else if (lowerMessage.contains('price') ||
+          lowerMessage.contains('cost')) {
+        return 'Các món tráng miệng có giá từ 35.000đ đến 65.000đ. Cheesecake 55.000đ/miếng, kem gelato Ý 45.000đ/ly, và bánh chocolate lava 65.000đ.';
+      } else {
+        return 'Thực đơn tráng miệng của chúng tôi bao gồm cheesecake nhiều hương vị, bánh chocolate lava, tiramisu, gelato Ý, bánh flan caramel và các loại bánh ngọt khác được làm mới mỗi ngày.';
+      }
+    }
+
+    // COMBO/DEALS related keywords
+    if (lowerMessage.contains('combo') ||
+        lowerMessage.contains('deal') ||
         lowerMessage.contains('discount') ||
-        lowerMessage.contains('special') ||
-        lowerMessage.contains('offer')) {
-      return 'Chúng tôi có nhiều ưu đãi hấp dẫn! Giảm 20% cho đơn hàng đầu tiên, combo gia đình tiết kiệm đến 30%, và đặc biệt miễn phí giao hàng cho đơn từ 200.000đ.';
+        lowerMessage.contains('khuyến mãi') ||
+        lowerMessage.contains('giảm giá')) {
+      return 'Chúng tôi có nhiều combo hấp dẫn: Combo gia đình (1 pizza cỡ lớn + 4 món phụ + 4 đồ uống) giá 450.000đ giảm còn 350.000đ. Combo đôi (2 burger + 2 khoai tây + 2 đồ uống) giá 200.000đ. Thứ Tư giảm 15% tất cả các món, và thứ Hai giảm 20% cho khách hàng mới!';
     }
 
-    // Dietary restrictions
+    // DELIVERY related keywords
+    if (lowerMessage.contains('delivery') ||
+        lowerMessage.contains('ship') ||
+        lowerMessage.contains('giao hàng') ||
+        lowerMessage.contains('vận chuyển')) {
+      return 'Chúng tôi giao hàng miễn phí trong bán kính 5km với đơn hàng từ 150.000đ. Phí ship chỉ 15.000đ cho các khu vực khác. Thời gian giao hàng trung bình từ 30-45 phút tùy khoảng cách và thời gian cao điểm.';
+    }
+
+    // ORDER PROCESS related keywords
+    if (lowerMessage.contains('order') ||
+        lowerMessage.contains('đặt hàng') ||
+        lowerMessage.contains('thanh toán')) {
+      return 'Bạn có thể đặt hàng trực tiếp trên ứng dụng này: chọn món ăn, thêm vào giỏ hàng, điền thông tin giao hàng và chọn phương thức thanh toán. Chúng tôi chấp nhận thanh toán khi giao hàng (COD), thẻ ngân hàng, và các ví điện tử phổ biến.';
+    }
+
+    // VEGETARIAN related keywords
     if (lowerMessage.contains('vegetarian') ||
         lowerMessage.contains('vegan') ||
-        lowerMessage.contains('gluten') ||
-        lowerMessage.contains('allergy')) {
-      return 'Chúng tôi có nhiều lựa chọn phù hợp với chế độ ăn đặc biệt. Bạn có thể lọc thực đơn theo các tiêu chí như đồ chay, không gluten, và xem đầy đủ thông tin về thành phần của từng món ăn.';
+        lowerMessage.contains('chay')) {
+      return 'Chúng tôi có nhiều lựa chọn cho thực khách ăn chay: pizza rau củ Địa Trung Hải, burger chay với patty từ đậu và nấm, salad Caesar chay, và các món phụ như khoai tây chiên, rau củ nướng. Tất cả đều được chế biến riêng biệt với các món mặn.';
     }
 
-    // Feedback or complaints
-    if (lowerMessage.contains('feedback') ||
-        lowerMessage.contains('complaint') ||
-        lowerMessage.contains('issue') ||
-        lowerMessage.contains('problem')) {
-      return 'Chúng tôi rất tiếc nếu bạn gặp vấn đề. Vui lòng cung cấp chi tiết về đơn hàng hoặc trải nghiệm của bạn qua mục "Hỗ trợ" để chúng tôi có thể giúp đỡ bạn nhanh nhất.';
+    // ALLERGY related keywords
+    if (lowerMessage.contains('allergy') ||
+        lowerMessage.contains('allergic') ||
+        lowerMessage.contains('dị ứng')) {
+      return 'Chúng tôi rất coi trọng vấn đề dị ứng thực phẩm. Vui lòng thông báo cho nhân viên về bất kỳ dị ứng nào khi đặt hàng. Thông tin chi tiết về thành phần của từng món ăn được liệt kê đầy đủ trong mục mô tả sản phẩm.';
+    }
+
+    // HOURS/LOCATION related keywords
+    if (lowerMessage.contains('hour') ||
+        lowerMessage.contains('time') ||
+        lowerMessage.contains('open') ||
+        lowerMessage.contains('close') ||
+        lowerMessage.contains('giờ') ||
+        lowerMessage.contains('địa chỉ') ||
+        lowerMessage.contains('location')) {
+      return 'Cửa hàng mở cửa từ 10:00 sáng đến 22:00 tối mỗi ngày. Địa chỉ các chi nhánh có thể tìm thấy trong mục "Vị trí cửa hàng" trong ứng dụng. Chi nhánh trung tâm ở 123 Nguyễn Huệ, Quận 1, TP.HCM.';
     }
 
     // Greeting or simple hello
@@ -384,18 +451,18 @@ class AIChatService {
         lowerMessage.contains('hello') ||
         lowerMessage.contains('xin chào') ||
         lowerMessage.contains('chào')) {
-      return 'Xin chào! Tôi là trợ lý ảo của cửa hàng thức ăn. Tôi có thể giúp gì cho bạn hôm nay?';
+      return 'Xin chào! Tôi là trợ lý ảo của PXTFoodStore. Tôi có thể giúp bạn tìm hiểu về menu, đặt hàng, giao hàng, khuyến mãi hoặc bất kỳ thông tin nào khác về nhà hàng của chúng tôi. Bạn muốn biết thông tin gì?';
     }
 
     // Thank you responses
     if (lowerMessage.contains('thanks') ||
         lowerMessage.contains('thank you') ||
         lowerMessage.contains('cảm ơn')) {
-      return 'Không có gì! Rất vui được giúp đỡ bạn. Nếu bạn cần hỗ trợ thêm, đừng ngần ngại hỏi nhé.';
+      return 'Rất vui được hỗ trợ bạn! Nếu bạn có bất kỳ câu hỏi nào khác hoặc cần thêm thông tin, đừng ngần ngại hỏi nhé. Chúc bạn có một bữa ăn ngon miệng!';
     }
 
     // Default response
-    return 'Cảm ơn bạn đã liên hệ. Chúng tôi luôn sẵn sàng hỗ trợ bạn với mọi câu hỏi về thực đơn, đặt hàng, hoặc dịch vụ khách hàng. Bạn có thể cho tôi biết cụ thể hơn về điều bạn đang tìm kiếm không?';
+    return 'Cảm ơn bạn đã liên hệ với PXTFoodStore. Tôi có thể giúp bạn tìm hiểu về menu đa dạng của chúng tôi, các chương trình khuyến mãi hấp dẫn, thông tin giao hàng, hoặc trả lời các câu hỏi về món ăn cụ thể. Bạn muốn biết thêm về điều gì?';
   }
 
   // Get AI chat history for a user

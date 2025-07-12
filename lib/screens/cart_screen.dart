@@ -8,6 +8,7 @@ import 'package:foodie/constant/app_theme.dart';
 import 'package:foodie/screens/auth/login_screen.dart';
 import 'package:foodie/screens/cart_provider.dart';
 import 'package:foodie/screens/order_details_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
 class CartScreen extends StatefulWidget {
@@ -146,8 +147,17 @@ class _CartScreenState extends State<CartScreen> {
         'address': _addressController.text,
       });
 
-      // Clear cart
-      cartProvider.clearCart();
+      // Clear cart with proper error handling
+      try {
+        cartProvider.clearCart();
+      } catch (e) {
+        debugPrint('Error clearing cart: $e');
+        // Try an alternative way to clear the cart if the first method fails
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('cart');
+        // Force recreate the cart items map
+        cartProvider.forceRefresh();
+      }
 
       setState(() {
         _isLoading = false;
