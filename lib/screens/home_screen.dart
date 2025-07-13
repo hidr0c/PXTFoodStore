@@ -23,6 +23,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   String _searchQuery = '';
 
+  // Filter state
+  String? _selectedPriceFilter;
+  int? _selectedRatingFilter;
+
   @override
   void initState() {
     super.initState();
@@ -38,9 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
       List<String> cats = ['Tất cả'];
       cats.addAll(categoriesSnapshot.docs.map((doc) => doc['name'] as String));
 
+      // Remove duplicates but keep "Tất cả" at the start
+      final uniqueCats = ['Tất cả', ...{...cats}..remove('Tất cả')];
+
       if (mounted) {
         setState(() {
-          _categories = cats;
+          _categories = uniqueCats;
         });
       }
     } catch (e) {
@@ -65,11 +72,36 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _foods = foodsSnapshot.docs.where((doc) {
-            if (_searchQuery.isEmpty) return true;
             final data = doc.data() as Map<String, dynamic>;
-            return (data['name'] ?? '')
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase());
+            bool matches = true;
+            // Search filter
+            if (_searchQuery.isNotEmpty) {
+              matches &= (data['name'] ?? '').toLowerCase().contains(_searchQuery.toLowerCase());
+            }
+            // Price filter
+            if (_selectedPriceFilter != null) {
+              final price = (data['price'] ?? 0) is int ? (data['price'] ?? 0).toDouble() : (data['price'] ?? 0);
+              switch (_selectedPriceFilter) {
+                case "Dưới 50.000đ":
+                  matches &= price < 50000;
+                  break;
+                case "50.000đ - 100.000đ":
+                  matches &= price >= 50000 && price <= 100000;
+                  break;
+                case "100.000đ - 200.000đ":
+                  matches &= price > 100000 && price <= 200000;
+                  break;
+                case "Trên 200.000đ":
+                  matches &= price > 200000;
+                  break;
+              }
+            }
+            // Rating filter
+            if (_selectedRatingFilter != null) {
+              final rating = (data['rating'] ?? 0).toDouble();
+              matches &= rating >= _selectedRatingFilter!;
+            }
+            return matches;
           }).toList();
           _isLoading = false;
         });
@@ -529,148 +561,180 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFilterBottomSheet() {
-    return Container(
-      padding: EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Lọc theo tiêu chí",
-                style: AppTheme.headingStyle.copyWith(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.close, color: Colors.grey.shade600),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Text(
-            "Giá:",
-            style: AppTheme.subheadingStyle.copyWith(fontSize: 16),
-          ),
-          SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            children: [
-              _buildFilterChip("Dưới 50.000đ"),
-              _buildFilterChip("50.000đ - 100.000đ"),
-              _buildFilterChip("100.000đ - 200.000đ"),
-              _buildFilterChip("Trên 200.000đ"),
-            ],
-          ),
-          SizedBox(height: 16),
-          Text(
-            "Đánh giá:",
-            style: AppTheme.subheadingStyle.copyWith(fontSize: 16),
-          ),
-          SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            children: [
-              for (int i = 3; i <= 5; i++)
-                _buildFilterChip(
-                  "$i+",
-                  icon: Icon(Icons.star, size: 16, color: Colors.amber),
-                ),
-            ],
-          ),
-          SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppTheme.primaryColor, width: 1.5),
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: Text(
-                    "Đặt lại",
-                    style: TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Apply filter logic if needed
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    elevation: 2,
-                  ),
-                  child: Text(
-                    "Áp dụng",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+    // Use temporary variables to hold filter selection in the modal
+    String? tempSelectedPrice = _selectedPriceFilter;
+    int? tempSelectedRating = _selectedRatingFilter;
+    return StatefulBuilder(
+      builder: (context, setModalState) {
+        Widget buildFilterChip(String label, {Icon? icon, bool isPrice = false, bool isRating = false}) {
+          bool selected = false;
+          if (isPrice) selected = tempSelectedPrice == label;
+          if (isRating) selected = tempSelectedRating?.toString() == label.replaceAll('+', '');
 
-  Widget _buildFilterChip(String label, {Icon? icon}) {
-    return FilterChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            icon,
-            SizedBox(width: 4),
-          ],
-          Text(label),
-        ],
-      ),
-      onSelected: (bool selected) {}, // Add filter logic here
-      backgroundColor: Colors.white,
-      selectedColor: AppTheme.primaryColor.withOpacity(0.4),
-      labelStyle: TextStyle(
-        color: Colors.grey.shade700,
-        fontWeight: FontWeight.w500,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade300),
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          return FilterChip(
+            label: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  icon,
+                  SizedBox(width: 4),
+                ],
+                Text(label),
+              ],
+            ),
+            selected: selected,
+            onSelected: (bool value) {
+              setModalState(() {
+                if (isPrice) {
+                  tempSelectedPrice = value ? label : null;
+                }
+                if (isRating) {
+                  tempSelectedRating = value ? int.parse(label.replaceAll('+', '')) : null;
+                }
+              });
+            },
+            backgroundColor: Colors.white,
+            selectedColor: AppTheme.primaryColor.withOpacity(0.4),
+            labelStyle: TextStyle(
+              color: selected ? AppTheme.primaryColor : Colors.grey.shade700,
+              fontWeight: FontWeight.w600,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: selected ? AppTheme.primaryColor : Colors.grey.shade300, width: selected ? 2 : 1),
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            showCheckmark: false,
+          );
+        }
+        return Container(
+          padding: EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade300,
+                blurRadius: 10,
+                offset: Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Lọc theo tiêu chí",
+                    style: AppTheme.headingStyle.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close, color: Colors.grey.shade600),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              Text(
+                "Giá:",
+                style: AppTheme.subheadingStyle.copyWith(fontSize: 16),
+              ),
+              SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: [
+                  buildFilterChip("Dưới 50.000đ", isPrice: true),
+                  buildFilterChip("50.000đ - 100.000đ", isPrice: true),
+                  buildFilterChip("100.000đ - 200.000đ", isPrice: true),
+                  buildFilterChip("Trên 200.000đ", isPrice: true),
+                ],
+              ),
+              SizedBox(height: 16),
+              Text(
+                "Đánh giá:",
+                style: AppTheme.subheadingStyle.copyWith(fontSize: 16),
+              ),
+              SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: [
+                  for (int i = 3; i <= 5; i++)
+                    buildFilterChip(
+                      "$i+",
+                      icon: Icon(Icons.star, size: 16, color: Colors.amber),
+                      isRating: true,
+                    ),
+                ],
+              ),
+              SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedPriceFilter = null;
+                          _selectedRatingFilter = null;
+                        });
+                        Navigator.pop(context);
+                        _loadFoods();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        "Đặt lại",
+                        style: TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedPriceFilter = tempSelectedPrice;
+                          _selectedRatingFilter = tempSelectedRating;
+                        });
+                        Navigator.pop(context);
+                        _loadFoods();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 2,
+                      ),
+                      child: Text(
+                        "Áp dụng",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

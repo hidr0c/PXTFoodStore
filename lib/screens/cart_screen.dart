@@ -142,10 +142,10 @@ class _CartScreenState extends State<CartScreen> {
       });
 
       // Update user information if needed
-      await _firestore.collection('users').doc(user.uid).update({
+      await _firestore.collection('users').doc(user.uid).set({
         'phone': _phoneController.text,
         'address': _addressController.text,
-      });
+      }, SetOptions(merge: true));
 
       // Clear cart with proper error handling
       try {

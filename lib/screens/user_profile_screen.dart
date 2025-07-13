@@ -42,25 +42,37 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     try {
       final user = _auth.currentUser;
-      if (user != null) {
-        // Check if user is admin
+      if (user == null) {
+        debugPrint('No user logged in');
+        return;
+      }
+      // Check if user is admin
+      setState(() {
+        _isAdmin = user.email == 'admin@foodstore.com';
+      });
+
+      final userData =
+          await _firestore.collection('users').doc(user.uid).get();
+
+      if (userData.exists) {
+        final data = userData.data();
         setState(() {
-          _isAdmin = user.email == 'admin@foodstore.com';
+          _nameController.text = data?['fullName'] ?? user.displayName ?? '';
+          _emailController.text = data?['email'] ?? user.email ?? '';
+          _phoneController.text = data?['phone'] ?? '';
+          _addressController.text = data?['address'] ?? '';
         });
-
-        final userData =
-            await _firestore.collection('users').doc(user.uid).get();
-
-        if (userData.exists) {
-          setState(() {
-            _nameController.text = userData['fullName'] ?? '';
-            _emailController.text = userData['email'] ?? '';
-            _phoneController.text = userData['phone'] ?? '';
-            _addressController.text = userData['address'] ?? '';
-          });
-        }
+      } else {
+        // Prefill from Firebase user if Firestore doc doesn't exist
+        setState(() {
+          _nameController.text = user.displayName ?? '';
+          _emailController.text = user.email ?? '';
+          _phoneController.text = '';
+          _addressController.text = '';
+        });
       }
     } catch (e) {
+      debugPrint('Error loading user data: $e');
       if (!mounted) return; // Ensure context is valid before using it
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không thể tải thông tin người dùng')),
@@ -87,11 +99,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
+        await _firestore.collection('users').doc(user.uid).set({
           'fullName': _nameController.text.trim(),
           'phone': _phoneController.text.trim(),
           'address': _addressController.text.trim(),
-        });
+          'email': user.email, // Optionally keep email in sync
+        }, SetOptions(merge: true));
+
+        if (_emailController.text.trim() != user.email) {
+          await user.updateEmail(_emailController.text.trim());
+          // You may need to re-authenticate the user here!
+        }
 
         setState(() {
           _isEditing = false;

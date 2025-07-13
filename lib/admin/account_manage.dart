@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AccountManageScreen extends StatefulWidget {
   const AccountManageScreen({super.key});
@@ -74,6 +75,13 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
   }
 
   Widget _buildUserItem(QueryDocumentSnapshot user) {
+    final data = user.data() as Map<String, dynamic>;
+    String? email = data.containsKey('email') ? data['email'] as String? : null;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if ((email == null || email.isEmpty) && currentUser != null && currentUser.uid == user.id) {
+      email = currentUser.email;
+    }
+    String? fullName = data.containsKey('fullName') ? data['fullName'] as String? : null;
     return GestureDetector(
       onTap: () {
         _showUserDetails(user);
@@ -90,7 +98,7 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              user['fullName'] ?? 'Chưa có họ tên',
+              fullName ?? 'Chưa có họ tên',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -98,7 +106,7 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
             ),
             const SizedBox(height: 5),
             Text(
-              "Email: ${user['email']}",
+              "Email: "+ (email ?? 'Không có email'),
               style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
@@ -108,23 +116,32 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
   }
 
   void _showUserDetails(QueryDocumentSnapshot user) {
+    final data = user.data() as Map<String, dynamic>;
+    String? email = data.containsKey('email') ? data['email'] as String? : null;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if ((email == null || email.isEmpty) && currentUser != null && currentUser.uid == user.id) {
+      email = currentUser.email;
+    }
+    String? fullName = data.containsKey('fullName') ? data['fullName'] as String? : null;
+    String? phone = data.containsKey('phone') ? data['phone'] as String? : null;
+    String? address = data.containsKey('address') ? data['address'] as String? : null;
+    String? status = data.containsKey('status') ? data['status'] as String? : null;
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(user['fullName'] ?? 'Chi tiết người dùng'),
+          title: Text(fullName ?? 'Chi tiết người dùng'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Email: ${user['email'] ?? 'Không có email'}"),
+              Text("Email: "+ (email ?? 'Không có email')),
               const SizedBox(height: 8),
-              Text(
-                  "Số điện thoại: ${user['phone'] ?? 'Không có số điện thoại'}"),
+              Text("Số điện thoại: "+ (phone ?? 'Không có số điện thoại')),
               const SizedBox(height: 8),
-              Text("Địa chỉ: ${user['address'] ?? 'Không có địa chỉ'}"),
+              Text("Địa chỉ: "+ (address ?? 'Không có địa chỉ')),
               const SizedBox(height: 8),
-              Text("Trạng thái: ${user['status'] ?? 'Không rõ'}"),
+              Text("Trạng thái: "+ (status ?? 'Không rõ')),
             ],
           ),
           actions: [
