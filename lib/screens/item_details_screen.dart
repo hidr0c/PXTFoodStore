@@ -300,24 +300,26 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        Colors.orange.shade100,
+                                        Colors.orange.shade50, // Giảm độ đậm
                                         Colors.white
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
-                                    borderRadius: BorderRadius.circular(15),
+                                    borderRadius: BorderRadius.circular(
+                                        10), // Giảm border radius
                                     boxShadow: [
                                       BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: 10),
-                                        blurRadius: 8,
-                                        offset: Offset(0, 2),
+                                        color: Colors.black.withValues(
+                                            alpha: 5), // Giảm opacity
+                                        blurRadius: 4, // Giảm blur
+                                        offset: Offset(0, 1), // Giảm offset
                                       ),
                                     ],
                                   ),
-                                  padding: EdgeInsets.all(16),
-                                  margin: EdgeInsets.symmetric(vertical: 8),
+                                  padding: EdgeInsets.all(12), // Giảm padding
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 6), // Giảm margin
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -327,43 +329,57 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                           Icon(
                                             Icons.star_rounded,
                                             color: Colors.orange.shade700,
-                                            size: 28,
+                                            size: 20, // Giảm kích thước icon
                                           ),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            "Đánh giá và nhận xét",
-                                            style: ThemeConstants.headingSmall
-                                                .copyWith(
-                                              color: ThemeConstants
-                                                  .textPrimaryColor,
-                                              fontWeight: FontWeight.bold,
+                                          SizedBox(
+                                              width: 6), // Giảm khoảng cách
+                                          Flexible(
+                                            // Để tránh overflow trong các thiết bị nhỏ
+                                            child: Text(
+                                              "Đánh giá và nhận xét",
+                                              style: ThemeConstants.headingSmall
+                                                  .copyWith(
+                                                color: ThemeConstants
+                                                    .textPrimaryColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize:
+                                                    14, // Giảm kích thước font
+                                              ),
+                                              overflow: TextOverflow
+                                                  .ellipsis, // Xử lý overflow
                                             ),
                                           ),
                                         ],
                                       ),
-                                      ElevatedButton.icon(
+                                      OutlinedButton.icon(
                                         icon: Icon(
                                           Icons.rate_review_rounded,
-                                          color: Colors.white,
-                                          size: 18,
+                                          color: ThemeConstants.primaryColor,
+                                          size: 16, // Giảm kích thước icon
                                         ),
                                         label: Text(
                                           'Viết đánh giá',
                                           style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                            color: ThemeConstants.primaryColor,
+                                            fontWeight:
+                                                FontWeight.w500, // Giảm độ đậm
                                             fontSize: 12,
                                           ),
                                         ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor:
                                               ThemeConstants.primaryColor,
-                                          elevation: 0,
+                                          side: BorderSide(
+                                              color:
+                                                  ThemeConstants.primaryColor,
+                                              width: 1), // Border mỏng
                                           padding: EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 8),
+                                              horizontal: 10,
+                                              vertical: 6), // Giảm padding
+                                          elevation: 0, // Không shadow
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(
+                                                8), // Giảm border radius
                                           ),
                                         ),
                                         onPressed: () {

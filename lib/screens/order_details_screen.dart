@@ -469,7 +469,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                               const SizedBox(height: 8),
                                               if (canRate)
                                                 SizedBox(
-                                                  height: 30,
+                                                  height: 24, // Giảm chiều cao
                                                   child: TextButton.icon(
                                                     onPressed: () =>
                                                         _showRatingDialog(
@@ -479,18 +479,29 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                                     ),
                                                     icon: const Icon(
                                                       Icons.star,
-                                                      size: 16,
+                                                      size:
+                                                          14, // Giảm kích thước icon
                                                     ),
-                                                    label:
-                                                        const Text('Đánh giá'),
+                                                    label: const Text(
+                                                      'Đánh giá',
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              12), // Giảm kích thước font
+                                                    ),
                                                     style: TextButton.styleFrom(
                                                       padding: const EdgeInsets
                                                           .symmetric(
-                                                          horizontal: 8),
+                                                          horizontal:
+                                                              6), // Giảm padding
                                                       minimumSize: Size.zero,
                                                       tapTargetSize:
                                                           MaterialTapTargetSize
                                                               .shrinkWrap,
+                                                      elevation:
+                                                          0, // Bỏ elevation
+                                                      foregroundColor: Colors
+                                                          .amber
+                                                          .shade700, // Đổi màu
                                                     ),
                                                   ),
                                                 ),
@@ -757,7 +768,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       context.read<CartProvider>().clearCart();
 
       if (!mounted) return; // Ensure context is valid before using it
-      Navigator.pushReplacement(
+
+      // Use push instead of pushReplacement to maintain the navigation stack
+      Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => const OrderSuccessScreen(),

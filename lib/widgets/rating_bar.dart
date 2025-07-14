@@ -25,54 +25,62 @@ class RatingBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy kích thước màn hình để tạo giao diện linh hoạt
+    final screenSize = MediaQuery.of(context).size;
+
+    // Điều chỉnh kích thước theo kích thước màn hình
+    final adaptiveSize = screenSize.width < 360 ? size * 0.9 : size;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: alignment,
       children: [
         // Star rating
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(5, (index) {
-            final starValue = index + 1;
-            final isHalf = rating > index && rating < starValue;
-            final isFull = rating >= starValue;
+        Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(5, (index) {
+              final starValue = index + 1;
+              final isHalf = rating > index && rating < starValue;
+              final isFull = rating >= starValue;
 
-            return GestureDetector(
-              onTap: allowRating
-                  ? () => onRatingChanged?.call(starValue.toDouble())
-                  : null,
-              child: Icon(
-                isFull
-                    ? Icons.star
-                    : isHalf
-                        ? Icons.star_half
-                        : Icons.star_outline,
-                size: size,
-                color: color,
-              ),
-            );
-          }),
+              return GestureDetector(
+                onTap: allowRating
+                    ? () => onRatingChanged?.call(starValue.toDouble())
+                    : null,
+                child: Icon(
+                  isFull
+                      ? Icons.star
+                      : isHalf
+                          ? Icons.star_half
+                          : Icons.star_outline,
+                  size: adaptiveSize, // Sử dụng kích thước thích ứng
+                  color: color,
+                ),
+              );
+            }),
+          ),
         ),
 
         // Rating text
         if (showText) ...[
-          SizedBox(width: 5),
+          SizedBox(width: 4), // Giảm khoảng cách
           Text(
             rating.toStringAsFixed(1),
             style: TextStyle(
-              fontSize: size * 0.8,
-              fontWeight: FontWeight.bold,
+              fontSize: adaptiveSize * 0.8, // Sử dụng kích thước thích ứng
+              fontWeight: FontWeight.w500, // Giảm độ đậm của font
               color: AppTheme.textPrimaryColor,
             ),
           ),
 
           // Total ratings count (if provided)
           if (totalRatings > 0) ...[
-            SizedBox(width: 3),
+            SizedBox(width: 2), // Giảm khoảng cách
             Text(
               '($totalRatings)',
               style: TextStyle(
-                fontSize: size * 0.7,
+                fontSize: adaptiveSize * 0.7, // Sử dụng kích thước thích ứng
                 color: AppTheme.textLightColor,
               ),
             ),

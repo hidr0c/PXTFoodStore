@@ -148,7 +148,7 @@ class _RatingReviewDialogState extends State<RatingReviewDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 8,
+      elevation: 4, // Giảm độ cao của shadow
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
@@ -156,9 +156,10 @@ class _RatingReviewDialogState extends State<RatingReviewDialog> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 40),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+              color:
+                  Colors.black.withValues(alpha: 20), // Giảm opacity của shadow
+              blurRadius: 8, // Giảm độ mờ của shadow
+              offset: const Offset(0, 2), // Giảm khoảng cách offset
             ),
           ],
         ),
@@ -227,13 +228,7 @@ class _RatingReviewDialogState extends State<RatingReviewDialog> {
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 10),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    // Bỏ boxShadow để giảm bóng và làm giao diện phẳng hơn
                   ),
                   child: TextFormField(
                     controller: _reviewController,
@@ -280,10 +275,14 @@ class _RatingReviewDialogState extends State<RatingReviewDialog> {
                           : () => Navigator.of(context).pop(),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
+                            horizontal: 20,
+                            vertical: 10), // Giảm padding để nút mỏng hơn
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Colors.grey.shade400),
+                          borderRadius:
+                              BorderRadius.circular(8), // Giảm border radius
+                          side: BorderSide(
+                              color: Colors.grey.shade300,
+                              width: 1), // Mỏng hơn và nhạt hơn
                         ),
                       ),
                       child: Text(
@@ -300,13 +299,14 @@ class _RatingReviewDialogState extends State<RatingReviewDialog> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         foregroundColor: Colors.white,
-                        elevation: 2,
+                        elevation: 1, // Giảm độ cao của shadow
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 12,
+                          horizontal: 24, // Giảm padding ngang
+                          vertical: 10, // Giảm padding dọc để nút mỏng hơn
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius:
+                              BorderRadius.circular(8), // Giảm border radius
                         ),
                       ),
                       child: _isSubmitting

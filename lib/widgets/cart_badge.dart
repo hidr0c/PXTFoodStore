@@ -27,18 +27,20 @@ class CartBadge extends StatelessWidget {
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     color: color ?? Colors.red,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius:
+                        BorderRadius.circular(8), // Giảm border radius
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                        color:
+                            Colors.black.withValues(alpha: 0.1), // Giảm opacity
+                        blurRadius: 2, // Giảm độ mờ
+                        offset: const Offset(0, 1), // Giảm offset
                       ),
                     ],
                   ),
                   constraints: const BoxConstraints(
-                    minWidth: 20,
-                    minHeight: 20,
+                    minWidth: 18, // Nhỏ hơn một chút
+                    minHeight: 18, // Nhỏ hơn một chút
                   ),
                   child: Text(
                     cart.totalQuantity > 99

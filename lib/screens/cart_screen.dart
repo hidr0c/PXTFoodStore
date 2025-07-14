@@ -173,6 +173,7 @@ class _CartScreenState extends State<CartScreen> {
         ),
       );
 
+      // Use push instead of pushReplacement to keep the navigation stack intact
       Navigator.push(
         context,
         MaterialPageRoute(

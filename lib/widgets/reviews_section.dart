@@ -269,16 +269,33 @@ class _ReviewsSectionState extends State<ReviewsSection> {
                   'Đánh giá & Nhận xét',
                   style: AppTheme.subheadingStyle,
                 ),
-                TextButton(
+                OutlinedButton.icon(
                   onPressed: () {
                     _addReview(context);
                   },
-                  child: Text(
+                  icon: Icon(
+                    Icons.rate_review,
+                    size: 16, // Giảm kích thước icon
+                    color: AppTheme.primaryColor,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primaryColor,
+                    side: BorderSide(
+                        color: AppTheme.primaryColor,
+                        width: 1), // Border mỏng hơn
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4), // Padding nhỏ hơn
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(6), // Border radius nhỏ hơn
+                    ),
+                  ),
+                  label: Text(
                     'Viết đánh giá',
                     style: TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500), // Font size nhỏ hơn
                   ),
                 ),
               ],
@@ -300,17 +317,31 @@ class _ReviewsSectionState extends State<ReviewsSection> {
                         style: TextButton.styleFrom(
                           backgroundColor: AppTheme.scaffoldBgColor,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: BorderSide(color: AppTheme.primaryColor),
+                            borderRadius:
+                                BorderRadius.circular(12), // Giảm border radius
+                            side: BorderSide(
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 180),
+                                width: 0.8), // Border mỏng và nhạt hơn
                           ),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 8),
+                              horizontal: 16, vertical: 6), // Giảm padding
                         ),
-                        child: Text(
-                          'Xem thêm đánh giá',
-                          style: TextStyle(
-                            color: AppTheme.primaryColor,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize
+                              .min, // Để button chỉ rộng theo nội dung
+                          children: [
+                            Text(
+                              'Xem thêm đánh giá',
+                              style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 13, // Giảm kích thước font
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Icon(Icons.keyboard_arrow_down_rounded,
+                                size: 16, color: AppTheme.primaryColor)
+                          ],
                         ),
                       ),
               ),
@@ -327,15 +358,10 @@ class _ReviewsSectionState extends State<ReviewsSection> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 5),
-            blurRadius: 10,
-            spreadRadius: 0,
-          ),
-        ],
+        borderRadius: BorderRadius.circular(12), // Giảm border radius
+        border: Border.all(
+            color: Colors.grey.shade200, width: 0.8), // Border mỏng hơn
+        // Bỏ boxShadow để giảm bóng đổ
       ),
       child: Center(
         child: Column(
@@ -407,63 +433,75 @@ class _ReviewsSectionState extends State<ReviewsSection> {
     final isAdmin = data['isAdmin'] ?? false;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 10), // Giảm margin thêm
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8), // Giảm border radius
       ),
-      elevation: 1,
+      elevation: 0.5, // Giảm elevation để shadow nhạt hơn
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding:
+            const EdgeInsets.all(12), // Giảm padding để tiết kiệm không gian
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start, // Đảm bảo alignment đúng
               children: [
                 Expanded(
                   child: Row(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start, // Đảm bảo alignment đúng
                     children: [
                       CircleAvatar(
+                        radius: 16, // Giảm kích thước avatar
                         backgroundColor: isAdmin
                             ? Colors.blue.shade700
                             : AppTheme.primaryColor,
                         child: Text(
                           userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12), // Giảm kích thước chữ
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8), // Giảm khoảng cách
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
-                                Expanded(
+                                Flexible(
+                                  // Sử dụng Flexible thay vì Expanded để linh hoạt hơn
                                   child: Text(
                                     userName,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                      fontSize: 14, // Giảm kích thước font
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 if (isAdmin)
                                   Container(
-                                    margin: const EdgeInsets.only(left: 6),
+                                    margin: const EdgeInsets.only(
+                                        left: 4), // Giảm margin
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
+                                        horizontal: 4,
+                                        vertical: 1), // Giảm padding
                                     decoration: BoxDecoration(
                                       color: Colors.blue.shade700,
-                                      borderRadius: BorderRadius.circular(4),
+                                      borderRadius: BorderRadius.circular(
+                                          3), // Giảm border radius
                                     ),
                                     child: const Text(
                                       'ADMIN',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 10,
+                                        fontSize: 8, // Giảm kích thước font
                                       ),
                                     ),
                                   ),
@@ -474,7 +512,7 @@ class _ReviewsSectionState extends State<ReviewsSection> {
                               dateStr,
                               style: TextStyle(
                                 color: AppTheme.textLightColor,
-                                fontSize: 12,
+                                fontSize: 10, // Giảm kích thước font
                               ),
                             ),
                           ],
@@ -485,7 +523,9 @@ class _ReviewsSectionState extends State<ReviewsSection> {
                 ),
                 if (isCurrentUser || widget.isAdmin)
                   PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert),
+                    icon: const Icon(Icons.more_vert,
+                        size: 18), // Giảm kích thước icon
+                    padding: EdgeInsets.zero, // Giảm padding
                     onSelected: (value) {
                       if (value == 'edit') {
                         _editReview(context, data, reviewId);
@@ -497,22 +537,37 @@ class _ReviewsSectionState extends State<ReviewsSection> {
                       if (isCurrentUser)
                         PopupMenuItem(
                           value: 'edit',
+                          height: 36, // Giảm height của item
                           child: Row(
+                            mainAxisSize: MainAxisSize
+                                .min, // Để row chỉ rộng theo nội dung
                             children: const [
                               Icon(Icons.edit,
-                                  size: 18, color: AppTheme.textSecondaryColor),
+                                  size: 16,
+                                  color: AppTheme
+                                      .textSecondaryColor), // Giảm kích thước icon
                               SizedBox(width: 8),
-                              Text('Sửa'),
+                              Text('Sửa',
+                                  style: TextStyle(
+                                      fontSize: 13)), // Giảm kích thước font
                             ],
                           ),
                         ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
+                        height: 36, // Giảm height của item
                         child: Row(
-                          children: [
-                            Icon(Icons.delete, size: 18, color: Colors.red),
+                          mainAxisSize:
+                              MainAxisSize.min, // Để row chỉ rộng theo nội dung
+                          children: const [
+                            Icon(Icons.delete,
+                                size: 16,
+                                color: Colors.red), // Giảm kích thước icon
                             SizedBox(width: 8),
-                            Text('Xóa', style: TextStyle(color: Colors.red)),
+                            Text('Xóa',
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 13)), // Giảm kích thước font
                           ],
                         ),
                       ),
@@ -520,17 +575,19 @@ class _ReviewsSectionState extends State<ReviewsSection> {
                   ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8), // Giảm khoảng cách
             RatingBar(
               rating: rating,
-              size: 16,
+              size: 14, // Giảm kích thước
               showText: false,
             ),
             if (comment.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 6), // Giảm khoảng cách
               Text(
                 comment,
-                style: const TextStyle(fontSize: 14),
+                style: const TextStyle(fontSize: 13), // Giảm kích thước font
+                maxLines: null, // Cho phép đoạn văn bản xuống dòng tự nhiên
+                overflow: TextOverflow.visible, // Không ẩn văn bản bị tràn
               ),
             ],
           ],

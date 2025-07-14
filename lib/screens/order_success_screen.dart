@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:foodie/constant/theme_constants.dart';
-import 'home_screen.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
   const OrderSuccessScreen({super.key});
@@ -55,13 +54,9 @@ class OrderSuccessScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HomeScreen(),
-                          ),
-                          (route) => false,
-                        );
+                        // Pop until we reach the MainNavigator which has the bottom navbar
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ThemeConstants.primaryColor,
