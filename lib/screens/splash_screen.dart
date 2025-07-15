@@ -140,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen>
                           ],
                         ),
                         child: Image.asset(
-                          "assets/images/logo.png",
+                          "assets/images/logo1pxt.png",
                           width: 100,
                           height: 100,
                           errorBuilder: (context, error, stackTrace) => Icon(
@@ -183,8 +183,8 @@ class _SplashScreenState extends State<SplashScreen>
                         height: height * 0.3,
                         decoration: const BoxDecoration(
                           image: DecorationImage(
-                            image:
-                                AssetImage("assets/images/frenchfriesgirl.png"),
+                            image: AssetImage(
+                                "assets/images/20250714_2026_PXT Food Logo_simple_compose_01k04htpy1eztb24shygme446j.png"),
                             fit: BoxFit.contain,
                           ),
                         ),

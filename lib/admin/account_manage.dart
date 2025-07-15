@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'edit_account_screen.dart';
 
 class AccountManageScreen extends StatefulWidget {
   const AccountManageScreen({super.key});
@@ -78,10 +79,13 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
     final data = user.data() as Map<String, dynamic>;
     String? email = data.containsKey('email') ? data['email'] as String? : null;
     final currentUser = FirebaseAuth.instance.currentUser;
-    if ((email == null || email.isEmpty) && currentUser != null && currentUser.uid == user.id) {
+    if ((email == null || email.isEmpty) &&
+        currentUser != null &&
+        currentUser.uid == user.id) {
       email = currentUser.email;
     }
-    String? fullName = data.containsKey('fullName') ? data['fullName'] as String? : null;
+    String? fullName =
+        data.containsKey('fullName') ? data['fullName'] as String? : null;
     return GestureDetector(
       onTap: () {
         _showUserDetails(user);
@@ -94,20 +98,32 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.black.withOpacity(0.15), width: 1),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Text(
-              fullName ?? 'Chưa có họ tên',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fullName ?? 'Chưa có họ tên',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    "Email: " + (email ?? 'Không có email'),
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 5),
-            Text(
-              "Email: "+ (email ?? 'Không có email'),
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.blue),
+              onPressed: () {
+                _editAccount(user.id, user.data() as Map<String, dynamic>);
+              },
             ),
           ],
         ),
@@ -119,13 +135,18 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
     final data = user.data() as Map<String, dynamic>;
     String? email = data.containsKey('email') ? data['email'] as String? : null;
     final currentUser = FirebaseAuth.instance.currentUser;
-    if ((email == null || email.isEmpty) && currentUser != null && currentUser.uid == user.id) {
+    if ((email == null || email.isEmpty) &&
+        currentUser != null &&
+        currentUser.uid == user.id) {
       email = currentUser.email;
     }
-    String? fullName = data.containsKey('fullName') ? data['fullName'] as String? : null;
+    String? fullName =
+        data.containsKey('fullName') ? data['fullName'] as String? : null;
     String? phone = data.containsKey('phone') ? data['phone'] as String? : null;
-    String? address = data.containsKey('address') ? data['address'] as String? : null;
-    String? status = data.containsKey('status') ? data['status'] as String? : null;
+    String? address =
+        data.containsKey('address') ? data['address'] as String? : null;
+    String? status =
+        data.containsKey('status') ? data['status'] as String? : null;
     showDialog(
       context: context,
       builder: (context) {
@@ -135,13 +156,13 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Email: "+ (email ?? 'Không có email')),
+              Text("Email: " + (email ?? 'Không có email')),
               const SizedBox(height: 8),
-              Text("Số điện thoại: "+ (phone ?? 'Không có số điện thoại')),
+              Text("Số điện thoại: " + (phone ?? 'Không có số điện thoại')),
               const SizedBox(height: 8),
-              Text("Địa chỉ: "+ (address ?? 'Không có địa chỉ')),
+              Text("Địa chỉ: " + (address ?? 'Không có địa chỉ')),
               const SizedBox(height: 8),
-              Text("Trạng thái: "+ (status ?? 'Không rõ')),
+              Text("Trạng thái: " + (status ?? 'Không rõ')),
             ],
           ),
           actions: [
@@ -149,9 +170,39 @@ class _AccountManageScreenState extends State<AccountManageScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Đóng'),
             ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _editAccount(user.id, data);
+              },
+              child: const Text('Chỉnh sửa',
+                  style: TextStyle(color: Colors.orange)),
+            ),
           ],
         );
       },
     );
+  }
+
+  // Method to navigate to the edit account screen
+  Future<void> _editAccount(
+      String userId, Map<String, dynamic> userData) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditAccountScreen(
+          userId: userId,
+          userData: userData,
+        ),
+      ),
+    );
+
+    // If the edit was successful, refresh the UI
+    if (result == true) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tài khoản đã được cập nhật!')),
+      );
+    }
   }
 }

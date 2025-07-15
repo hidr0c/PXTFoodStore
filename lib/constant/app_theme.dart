@@ -15,17 +15,14 @@ extension ColorExtension on Color {
 }
 
 class AppTheme {
-  // Primary color for the app
-  static final Color primaryColor =
-      Colors.orange[700] ?? const Color(0xFFE65100);
+  // Primary color for the app - Brown color
+  static final Color primaryColor = const Color(0xFF8B5A2B);
 
-  // Scaffold background color
-  static final Color scaffoldBgColor =
-      Colors.grey[100] ?? const Color(0xFFF5F5F5);
+  // Scaffold background color - Light cream
+  static final Color scaffoldBgColor = const Color(0xFFFAF5EB);
 
-  // Secondary color for the app
-  static final Color secondaryColor =
-      Colors.green[600] ?? const Color(0xFF43A047);
+  // Secondary color for the app - Lighter brown
+  static final Color secondaryColor = const Color(0xFFB88A5F);
 
   // Error color
   static const Color errorColor = Color(0xFFE53935);
@@ -50,10 +47,10 @@ class AppTheme {
   // Border color
   static final Color borderColor = Colors.grey[300] ?? const Color(0xFFE0E0E0);
 
-  // Gradient colors
+  // Gradient colors - Brown gradient
   static const List<Color> primaryGradient = [
-    Color(0xFFFF9800),
-    Color(0xFFE65100),
+    Color(0xFFB88A5F), // Lighter brown
+    Color(0xFF8B5A2B), // Darker brown
   ];
   // Shadows with various intensities
   static BoxShadow boxShadowNone = BoxShadow(

@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:foodie/admin/edit_food_screen.dart';
 import 'package:foodie/constant/app_color.dart';
 import 'add_food_screen.dart';
 
@@ -58,6 +59,10 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
               child: const Text("Hủy"),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor.primaryColor,
+                foregroundColor: Colors.white,
+              ),
               onPressed: () async {
                 final int fillAmount = int.tryParse(fillController.text) ?? 0;
 
@@ -92,6 +97,27 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
         );
       },
     );
+  }
+
+  // Hàm chỉnh sửa món ăn
+  Future<void> _editFood(String foodId, Map<String, dynamic> foodData) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditFoodScreen(
+          foodId: foodId,
+          foodData: foodData,
+        ),
+      ),
+    );
+
+    // If the edit was successful, refresh the UI
+    if (result == true) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Món ăn đã được cập nhật!')),
+      );
+    }
   }
 
   @override
@@ -303,9 +329,19 @@ class _FoodManageScreenState extends State<FoodManageScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deleteFood(food.id),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.blue),
+                    onPressed: () {
+                      _editFood(food.id, food.data() as Map<String, dynamic>);
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _deleteFood(food.id),
+                  ),
+                ],
               ),
             ],
           ),

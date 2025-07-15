@@ -106,14 +106,26 @@ class _AdminScreenState extends State<AdminScreen>
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBgColor,
       appBar: AppBar(
-        title: Text(
-          _currentIndex == 0
-              ? 'Admin Dashboard'
-              : _navItems[_currentIndex]['label'],
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Image.asset(
+                'assets/images/logo1pxt.png',
+                width: 32,
+                height: 32,
+              ),
+            ),
+            Text(
+              _currentIndex == 0
+                  ? 'Admin Dashboard'
+                  : _navItems[_currentIndex]['label'],
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
         backgroundColor: AppTheme.primaryColor,
         elevation: 0,
@@ -155,10 +167,18 @@ class _AdminScreenState extends State<AdminScreen>
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Color(0xFFFAF5EB),
           border: Border(
-            top: BorderSide(color: Colors.black.withOpacity(0.15), width: 1.0),
+            top: BorderSide(
+                color: AppTheme.primaryColor.withOpacity(0.2), width: 1.0),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              offset: Offset(0, -1),
+              blurRadius: 4,
+            ),
+          ],
         ),
         child: TabBar(
           controller: _tabController,
@@ -171,7 +191,7 @@ class _AdminScreenState extends State<AdminScreen>
             ),
           ),
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: Colors.grey,
+          unselectedLabelColor: AppTheme.secondaryColor.withOpacity(0.6),
           tabs: _navItems.map((item) {
             return Tab(
               icon: Icon(item['icon']),
@@ -202,19 +222,20 @@ class _AdminScreenState extends State<AdminScreen>
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'Xin chào, Admin',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimaryColor,
+                        color: AppTheme.primaryColor,
                       ),
                     ),
                     Text(
                       'Tổng quan hoạt động kinh doanh',
                       style: TextStyle(
-                        color: AppTheme.textSecondaryColor,
+                        color: AppTheme.secondaryColor,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -321,13 +342,12 @@ class _AdminScreenState extends State<AdminScreen>
                     var data = doc.data() as Map<String, dynamic>;
 
                     return Card(
-                      elevation: 0,
-                      margin: EdgeInsets.only(bottom: 8),
+                      elevation: 2,
+                      margin: EdgeInsets.only(bottom: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                            color: Colors.black.withOpacity(0.15), width: 1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      color: Colors.white,
                       child: ListTile(
                         contentPadding: EdgeInsets.all(8),
                         title: Text(
@@ -393,38 +413,50 @@ class _AdminScreenState extends State<AdminScreen>
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black.withOpacity(0.15), width: 1),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: color, size: 30),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: AppTheme.primaryColor, size: 26),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondaryColor,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 16),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.textSecondaryColor,
-              ),
-            ),
-            SizedBox(height: 4),
+            SizedBox(height: 20),
             Text(
               value,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: AppTheme.primaryColor,
               ),
             ),
           ],
@@ -436,15 +468,15 @@ class _AdminScreenState extends State<AdminScreen>
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending':
-        return Color(0xFFFF9800); // Orange
+        return Color(0xFFB88A5F); // Lighter brown (secondary)
       case 'processing':
-        return Color(0xFF2196F3); // Blue
+        return Color(0xFF8B5A2B); // Brown (primary)
       case 'shipping':
-        return Color(0xFF9C27B0); // Purple
+        return Color(0xFF6B4226); // Darker brown
       case 'delivered':
-        return Color(0xFF4CAF50); // Green
+        return Color(0xFF5E8C61); // Green with brown tint
       case 'cancelled':
-        return Color(0xFFE53935); // Red
+        return Color(0xFFC17878); // Red with brown tint
       default:
         return AppTheme.textLightColor;
     }
