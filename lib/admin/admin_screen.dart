@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:foodie/admin/food_manage.dart';
 import 'package:foodie/admin/orders_manage.dart';
 import 'package:foodie/admin/account_manage.dart';
+import 'package:foodie/admin/order_detail_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -323,7 +324,12 @@ class _AdminScreenState extends State<AdminScreen> {
                                   ),
                                 ),
                                 onTap: () {
-                                  // Chi tiết đơn hàng
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AdminOrderDetailScreen(orderId: doc.id),
+                                    ),
+                                  );
                                 },
                               ),
                             );

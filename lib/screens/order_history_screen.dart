@@ -7,6 +7,9 @@ import 'package:foodie/constant/app_theme.dart';
 import 'package:foodie/screens/auth/login_screen.dart';
 import 'package:foodie/screens/order_details_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:foodie/screens/cart_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:foodie/screens/cart_provider.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -335,8 +338,42 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       children: [
         if (status == 'delivered')
           TextButton.icon(
-            onPressed: () {
-              // Re-order functionality
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Đặt lại đơn hàng'),
+                  content: const Text('Bạn có muốn đặt lại đơn hàng này?'),
+                  actions: [
+                    TextButton(
+                      child: const Text('Hủy'),
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                    ),
+                    TextButton(
+                      child: const Text('Xác nhận'),
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm == true) {
+                final order = await _firestore.collection('orders').doc(orderId).get();
+                final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                for (final item in order['items']) {
+                  cartProvider.addItem(
+                    productId: item['productId'],
+                    name: item['name'],
+                    price: (item['price'] as num).toDouble(),
+                    quantity: item['quantity'],
+                    spiceLevel: (item['spiceLevel'] as num).toDouble(),
+                    imageUrl: item['imageUrl'],
+                  );
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã thêm sản phẩm vào giỏ hàng!')),
+                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => CartScreen()));
+              }
             },
             icon: const Icon(Icons.refresh),
             label: const Text('Đặt lại'),
