@@ -54,9 +54,8 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   void _addToCart() {
     if (quantity > availableQuantity || availableQuantity <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              const Text('Món ăn này đã hết hoặc vượt quá số lượng giới hạn'),
+        const SnackBar(
+          content: Text('Món ăn này đã hết hoặc vượt quá số lượng giới hạn'),
           backgroundColor: Colors.red,
         ),
       );
@@ -78,7 +77,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
           action: SnackBarAction(
             label: 'Xem giỏ hàng',
             textColor: Colors.white,
-            onPressed: () => _navigateToCartScreen(),
+            onPressed: _navigateToCartScreen,
           ),
         ),
       );
@@ -94,6 +93,57 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
     );
   }
 
+  Widget _buildQuantityButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          backgroundColor: ThemeConstants.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
+          ),
+        ),
+        child: Icon(icon, size: 20, color: ThemeConstants.textPrimaryColor),
+      ),
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar(Map<String, dynamic> food) {
+    return SliverAppBar(
+      expandedHeight: 300,
+      pinned: true,
+      flexibleSpace: FlexibleSpaceBar(
+        background: NetworkImageWithFallback(
+          imageUrl: food['imageUrl'],
+          fit: BoxFit.cover,
+        ),
+      ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: isFavorite ? Colors.red : Colors.white,
+          ),
+          onPressed: () {
+            setState(() {
+              isFavorite = !isFavorite;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
@@ -103,7 +153,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
           .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Scaffold(
+          return const Scaffold(
             backgroundColor: ThemeConstants.backgroundColor,
             body: Center(
               child: CircularProgressIndicator(
@@ -114,7 +164,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
           );
         }
         final food = snapshot.data!.data() as Map<String, dynamic>;
-        bool isNonSpicy =
+        final isNonSpicy =
             food['category'] == 'Drinks' || food['category'] == 'Other';
         return Scaffold(
           backgroundColor: ThemeConstants.backgroundColor,
@@ -135,425 +185,143 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(ThemeConstants.spacingLG),
+                        padding: const EdgeInsets.all(ThemeConstants.spacingLG),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    food['name'],
-                                    style: ThemeConstants.headingLarge,
-                                  ),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: ThemeConstants.spacingSM,
-                                    vertical: ThemeConstants.spacingXS,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: ThemeConstants.primaryColor
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(
-                                        ThemeConstants.borderRadiusLG),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.star,
-                                        color: ThemeConstants.primaryColor,
-                                        size: 16,
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        '4.8',
-                                        style:
-                                            ThemeConstants.bodyLarge.copyWith(
-                                          color: ThemeConstants.primaryColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: ThemeConstants.spacingSM),
                             Text(
-                              '${(food['price'] as num).toStringAsFixed(0)} VNĐ',
+                              food['name'],
                               style: ThemeConstants.headingMedium.copyWith(
-                                color: ThemeConstants.primaryColor,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: ThemeConstants.spacingMD),
+                            const SizedBox(
+                                height: ThemeConstants
+                                    .spacingMD), // Increased spacing
                             Text(
-                              'Mô tả',
-                              style: ThemeConstants.headingSmall,
-                            ),
-                            SizedBox(height: ThemeConstants.spacingSM),
-                            Text(
-                              food['description'] ?? 'Không có mô tả',
+                              '${(food['price'] as num).toStringAsFixed(0)} VNĐ',
                               style: ThemeConstants.bodyLarge.copyWith(
-                                color: ThemeConstants.textSecondaryColor,
-                                height: 1.5,
+                                color: ThemeConstants.primaryColor,
                               ),
                             ),
-                            SizedBox(height: ThemeConstants.spacingLG),
-                            Text(
-                              'Số lượng',
-                              style: ThemeConstants.headingSmall,
-                            ),
-                            SizedBox(height: ThemeConstants.spacingSM),
+                            const SizedBox(height: ThemeConstants.spacingMD),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                _buildQuantityButton(
-                                  icon: Icons.remove,
-                                  onPressed: () {
-                                    if (quantity > 1) {
-                                      setState(() => quantity--);
-                                    }
-                                  },
+                                const Text(
+                                  'Số lượng',
+                                  style: ThemeConstants.bodyMedium,
                                 ),
-                                Container(
-                                  width: 50,
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    quantity.toString(),
-                                    style: ThemeConstants.headingSmall,
-                                  ),
-                                ),
-                                _buildQuantityButton(
-                                  icon: Icons.add,
-                                  onPressed: () {
-                                    if (quantity < availableQuantity) {
-                                      setState(() => quantity++);
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                              'Không đủ số lượng món ăn có sẵn'),
-                                          backgroundColor:
-                                              ThemeConstants.errorColor,
-                                        ),
-                                      );
-                                    }
-                                  },
+                                Row(
+                                  children: [
+                                    _buildQuantityButton(
+                                      icon: Icons.remove,
+                                      onPressed: () {
+                                        if (quantity > 1) {
+                                          setState(() {
+                                            quantity--;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                    const SizedBox(
+                                        width: ThemeConstants.spacingSM),
+                                    Text(
+                                      '$quantity',
+                                      style: ThemeConstants.bodyLarge,
+                                    ),
+                                    const SizedBox(
+                                        width: ThemeConstants.spacingSM),
+                                    _buildQuantityButton(
+                                      icon: Icons.add,
+                                      onPressed: () {
+                                        if (quantity < availableQuantity) {
+                                          setState(() {
+                                            quantity++;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: ThemeConstants.spacingLG),
-                      if (!isNonSpicy) ...[
-                        Text(
-                          "Mức độ cay",
-                          style: ThemeConstants.headingSmall,
-                        ),
-                        SizedBox(height: ThemeConstants.spacingSM),
-                        SliderTheme(
-                          data: SliderThemeData(
-                            activeTrackColor: ThemeConstants.primaryColor,
-                            inactiveTrackColor: ThemeConstants.primaryColor
-                                .withValues(alpha: 0.2),
-                            thumbColor: ThemeConstants.primaryColor,
-                            overlayColor: ThemeConstants.primaryColor
-                                .withValues(alpha: 0.1),
-                            valueIndicatorColor: ThemeConstants.primaryColor,
-                            valueIndicatorTextStyle:
-                                TextStyle(color: Colors.white),
-                          ),
-                          child: Slider(
-                            value: spiceLevel,
-                            min: 1,
-                            max: 5,
-                            divisions: 4,
-                            label: "$spiceLevel",
-                            onChanged: (double newValue) {
-                              setState(() {
-                                spiceLevel = newValue;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                      SizedBox(height: ThemeConstants.spacingLG),
-
-                      // Rating and Review Section
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: ThemeConstants.spacingLG),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.orange.shade100,
-                                    Colors.white
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
+                            if (!isNonSpicy) ...[
+                              const SizedBox(height: ThemeConstants.spacingMD),
+                              Text(
+                                'Độ cay',
+                                style: ThemeConstants.bodyMedium,
+                              ),
+                              Slider(
+                                value: spiceLevel,
+                                min: 1,
+                                max: 5,
+                                divisions: 4,
+                                label: spiceLevel.toString(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    spiceLevel = value;
+                                  });
+                                },
+                                activeColor: ThemeConstants.primaryColor,
+                              ),
+                            ],
+                            const SizedBox(
+                                height: ThemeConstants
+                                    .spacingLG), // Increased spacing
+                            ElevatedButton(
+                              onPressed: _addToCart,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ThemeConstants.primaryColor,
+                                minimumSize: const Size(double.infinity, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      ThemeConstants.borderRadiusMD),
                                 ),
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 10),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
                               ),
-                              padding: EdgeInsets.all(16),
-                              margin: EdgeInsets.symmetric(vertical: 8),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.star_rounded,
-                                        color: Colors.orange.shade700,
-                                        size: 28,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        "Đánh giá và nhận xét",
-                                        style: ThemeConstants.headingSmall
-                                            .copyWith(
-                                          color:
-                                              ThemeConstants.textPrimaryColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  ElevatedButton.icon(
-                                    icon: Icon(
-                                      Icons.rate_review_rounded,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                    label: Text(
-                                      'Viết đánh giá',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          ThemeConstants.primaryColor,
-                                      elevation: 0,
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 8),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      final isAdmin = FirebaseAuth
-                                              .instance.currentUser?.email ==
-                                          'admin@foodstore.com';
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) =>
-                                            RatingReviewDialog(
-                                          productId: widget.foodId,
-                                          productName: food['name'],
-                                          isAdmin: isAdmin,
-                                          onReviewAdded: () {
-                                            setState(() {});
-                                          },
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
+                              child: const Text(
+                                'Thêm vào giỏ hàng',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: ThemeConstants.spacingSM),
-                            ReviewsSection(
-                              productId: widget.foodId,
-                              productName: food['name'],
-                              imageUrl: food['imageUrl'],
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: ThemeConstants.spacingXL * 2),
+                      ReviewsSection(
+                        productId: widget.foodId,
+                        productName: food['name'],
+                      ),
                     ],
                   ),
                 ),
               ),
             ],
           ),
-          bottomNavigationBar: _buildBottomBar(food),
-        );
-      },
-    );
-  }
-
-  Widget _buildSliverAppBar(Map<String, dynamic> food) {
-    return SliverAppBar(
-      expandedHeight: 300,
-      pinned: true,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            NetworkImageWithFallback(
-              imageUrl: food['imageUrl'],
-              width: double.infinity,
-              height: double.infinity,
-              borderRadius: BorderRadius.zero,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.3),
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.3),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      leading: Container(
-        margin: EdgeInsets.all(ThemeConstants.spacingSM),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: ThemeConstants.shadowSm,
-        ),
-        child: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: ThemeConstants.textPrimaryColor,
-            size: 20,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      actions: [
-        Container(
-          margin: EdgeInsets.all(ThemeConstants.spacingSM),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: ThemeConstants.shadowSm,
-          ),
-          child: IconButton(
-            icon: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: isFavorite
-                  ? ThemeConstants.errorColor
-                  : ThemeConstants.textSecondaryColor,
-              size: 20,
-            ),
-            onPressed: () {
-              setState(() => isFavorite = !isFavorite);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuantityButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: ThemeConstants.surfaceColor,
-        borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusMD),
-        boxShadow: ThemeConstants.shadowSm,
-      ),
-      child: IconButton(
-        icon: Icon(
-          icon,
-          size: 20,
-          color: ThemeConstants.textPrimaryColor,
-        ),
-        onPressed: onPressed,
-      ),
-    );
-  }
-
-  Widget _buildBottomBar(Map<String, dynamic> food) {
-    return Container(
-      padding: EdgeInsets.all(ThemeConstants.spacingMD),
-      decoration: BoxDecoration(
-        color: ThemeConstants.surfaceColor,
-        boxShadow: ThemeConstants.shadowLg,
-      ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Tổng cộng',
-                    style: ThemeConstants.bodyMedium.copyWith(
-                      color: ThemeConstants.textSecondaryColor,
-                    ),
-                  ),
-                  Text(
-                    '${((food['price'] as num) * quantity).toStringAsFixed(0)} VNĐ',
-                    style: ThemeConstants.headingMedium.copyWith(
-                      color: ThemeConstants.primaryColor,
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.all(
+                ThemeConstants.spacingLG), // Increased padding
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment
+                  .start, // Changed to start for better alignment
+              children: [
+                Expanded(
+                  child: Text(
+                    'Tổng: ${(food['price'] * quantity).toStringAsFixed(0)} VNĐ',
+                    style: ThemeConstants.bodyLarge.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(width: ThemeConstants.spacingMD),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: _addToCart,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ThemeConstants.primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(
-                    vertical: ThemeConstants.spacingMD,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(ThemeConstants.borderRadiusLG),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Thêm vào giỏ',
-                  style: ThemeConstants.bodyLarge.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
