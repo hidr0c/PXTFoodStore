@@ -297,6 +297,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                           child: TextFormField(
                             controller: _quantityController,
                             keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
                             decoration: InputDecoration(
                               labelText: 'Số lượng hiện tại',
                               border: OutlineInputBorder(
@@ -306,6 +307,26 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                               fillColor: Colors.white,
                               prefixIcon: Icon(Icons.production_quantity_limits,
                                   color: AppTheme.primaryColor),
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 5),
+                              suffixIcon: IconButton(
+                                icon: Icon(Icons.add_circle_outline,
+                                    color: AppTheme.primaryColor),
+                                onPressed: () {
+                                  int max = int.tryParse(
+                                          _maxQuantityController.text) ??
+                                      0;
+                                  int current =
+                                      int.tryParse(_quantityController.text) ??
+                                          0;
+                                  if (current < max) {
+                                    setState(() {
+                                      _quantityController.text =
+                                          (current + 1).toString();
+                                    });
+                                  }
+                                },
+                              ),
                             ),
                           ),
                         ),
@@ -314,6 +335,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                           child: TextFormField(
                             controller: _maxQuantityController,
                             keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
                             decoration: InputDecoration(
                               labelText: 'Số lượng tối đa',
                               border: OutlineInputBorder(
@@ -323,6 +345,26 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                               fillColor: Colors.white,
                               prefixIcon: Icon(Icons.inventory,
                                   color: AppTheme.primaryColor),
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 5),
+                              suffixIcon: IconButton(
+                                icon: Icon(Icons.add_circle_outline,
+                                    color: AppTheme.primaryColor),
+                                onPressed: () {
+                                  int current =
+                                      int.tryParse(_quantityController.text) ??
+                                          0;
+                                  int max = int.tryParse(
+                                          _maxQuantityController.text) ??
+                                      0;
+                                  if (current <= max) {
+                                    setState(() {
+                                      _maxQuantityController.text =
+                                          (max + 1).toString();
+                                    });
+                                  }
+                                },
+                              ),
                             ),
                           ),
                         ),
@@ -382,7 +424,26 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
                           backgroundColor: AppTheme.primaryColor,
                           foregroundColor: Colors.white,
                         ),
-                        onPressed: _updateFood,
+                        onPressed: () {
+                          int current =
+                              int.tryParse(_quantityController.text) ?? 0;
+                          int max =
+                              int.tryParse(_maxQuantityController.text) ?? 0;
+                          if (_nameController.text.isNotEmpty &&
+                              _descriptionController.text.isNotEmpty &&
+                              _priceController.text.isNotEmpty &&
+                              _quantityController.text.isNotEmpty &&
+                              _maxQuantityController.text.isNotEmpty &&
+                              current <= max) {
+                            _updateFood();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Vui lòng nhập thông tin hợp lệ!')),
+                            );
+                          }
+                        },
                         child: const Text(
                           'CẬP NHẬT',
                           style: TextStyle(

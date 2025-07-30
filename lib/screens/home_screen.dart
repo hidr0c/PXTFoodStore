@@ -43,7 +43,10 @@ class _HomeScreenState extends State<HomeScreen> {
       cats.addAll(categoriesSnapshot.docs.map((doc) => doc['name'] as String));
 
       // Remove duplicates but keep "Tất cả" at the start
-      final uniqueCats = ['Tất cả', ...{...cats}..remove('Tất cả')];
+      final uniqueCats = [
+        'Tất cả',
+        ...{...cats}..remove('Tất cả')
+      ];
 
       if (mounted) {
         setState(() {
@@ -76,11 +79,15 @@ class _HomeScreenState extends State<HomeScreen> {
             bool matches = true;
             // Search filter
             if (_searchQuery.isNotEmpty) {
-              matches &= (data['name'] ?? '').toLowerCase().contains(_searchQuery.toLowerCase());
+              matches &= (data['name'] ?? '')
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase());
             }
             // Price filter
             if (_selectedPriceFilter != null) {
-              final price = (data['price'] ?? 0) is int ? (data['price'] ?? 0).toDouble() : (data['price'] ?? 0);
+              final price = (data['price'] ?? 0) is int
+                  ? (data['price'] ?? 0).toDouble()
+                  : (data['price'] ?? 0);
               switch (_selectedPriceFilter) {
                 case "Dưới 50.000đ":
                   matches &= price < 50000;
@@ -464,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: EdgeInsets.all(16),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.75,
+                          childAspectRatio: 0.72,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
                         ),
@@ -495,7 +502,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         top: Radius.circular(12)),
                                     child: Image.network(
                                       data['imageUrl'] ?? '',
-                                      height: 120,
+                                      height: 110,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
                                       errorBuilder:
@@ -506,41 +513,54 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.all(10.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          data['name'] ?? '',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            color: AppTheme.textPrimaryColor,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                data['name'] ?? '',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15,
+                                                  color:
+                                                      AppTheme.textPrimaryColor,
+                                                ),
+                                                maxLines: 3,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        SizedBox(height: 6),
+                                        SizedBox(height: 4),
                                         Text(
                                           '${data['price'] ?? 0} VND',
                                           style: TextStyle(
                                             color: AppTheme.primaryColor,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 14,
+                                            fontSize: 13,
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        SizedBox(height: 6),
+                                        SizedBox(height: 4),
                                         Row(
                                           children: [
                                             Icon(Icons.star,
-                                                size: 16, color: Colors.amber),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              '${(data['rating']?.toDouble() ?? 0.0).toStringAsFixed(1)}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey.shade600,
+                                                size: 14, color: Colors.amber),
+                                            SizedBox(width: 2),
+                                            Flexible(
+                                              child: Text(
+                                                '${(data['rating']?.toDouble() ?? 0.0).toStringAsFixed(1)}',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                           ],
@@ -566,10 +586,13 @@ class _HomeScreenState extends State<HomeScreen> {
     int? tempSelectedRating = _selectedRatingFilter;
     return StatefulBuilder(
       builder: (context, setModalState) {
-        Widget buildFilterChip(String label, {Icon? icon, bool isPrice = false, bool isRating = false}) {
+        Widget buildFilterChip(String label,
+            {Icon? icon, bool isPrice = false, bool isRating = false}) {
           bool selected = false;
           if (isPrice) selected = tempSelectedPrice == label;
-          if (isRating) selected = tempSelectedRating?.toString() == label.replaceAll('+', '');
+          if (isRating)
+            selected =
+                tempSelectedRating?.toString() == label.replaceAll('+', '');
 
           return FilterChip(
             label: Row(
@@ -589,7 +612,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   tempSelectedPrice = value ? label : null;
                 }
                 if (isRating) {
-                  tempSelectedRating = value ? int.parse(label.replaceAll('+', '')) : null;
+                  tempSelectedRating =
+                      value ? int.parse(label.replaceAll('+', '')) : null;
                 }
               });
             },
@@ -601,12 +625,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: selected ? AppTheme.primaryColor : Colors.grey.shade300, width: selected ? 2 : 1),
+              side: BorderSide(
+                  color:
+                      selected ? AppTheme.primaryColor : Colors.grey.shade300,
+                  width: selected ? 2 : 1),
             ),
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             showCheckmark: false,
           );
         }
+
         return Container(
           padding: EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -686,7 +714,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         _loadFoods();
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                        side: BorderSide(
+                            color: AppTheme.primaryColor, width: 1.5),
                         padding: EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
